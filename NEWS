@@ -1,0 +1,165 @@
+Changes in version 1.5.7:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Add mosaicsHMM(): Chromosome-wise fitting for more stable fitting and prediction. Supports parallel computing. Add arguments for maxgap, minsize, and thres.
+
+Changes in version 1.5.6:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Add mosaicsHMM(): Hidden-Markov-Model-based MOSAiCS peak calling to identify broad peaks such as histone modifications.
+
+Changes in version 1.5.5:
+
+BUG FIXES
+
+    o constructBins() & export(): Use correct base for BED file.
+
+Changes in version 1.5.4:
+
+    o Polish help documents of constructBins(), generateWig(), and mosaicsRunAll().
+
+    o Polish the vignette.
+    
+Changes in version 1.5.3:
+
+BUG FIXES
+
+    o mosaicsRunAll(): Bug fix when byChr = TRUE.
+
+Changes in version 1.5.2:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o constructBins(): Supports aligned read file formats for PET data (eland results and SAM formats). 
+
+    o mosaicsRunAll(): Supports aligned read file formats for PET data. 
+    
+    o Add generateWig(): Constructs wiggle files for PET and SET data. 
+    
+    o Use tab separator instead of whitespaces for generateWig() and constructBins().
+    
+    o Improve the vignette (case studies, example lines for input files, generateWig()).
+
+BUG FIXES
+
+    o constructBins(): Bug fix for capping and excludeChr. Fix incorrect summary when byChr = TRUE.
+
+    o mosaicsRunAll(): Bug fix for excludeChr & handling the full path for chipFile and controlFile.
+
+Changes in version 1.5.1:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o constructBins(): Chromosome information can now be specified. 
+    
+    o mosaicsRunAll(): Chromosome information can now be specified. 
+
+
+Changes in version 1.4.1:
+
+BUG FIXES
+
+    o constructBins(): Bug fix for the "outfileLoc" argument. 
+
+    o mosaicsFit(): Minor changes in two-signal-component model fitting.
+
+    o mosaicsPeak(): No warning with the updated IRanges package.
+
+
+Changes in version 1.3.4:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Improve help documents for all classes and functions.
+    
+BUG FIXES
+
+    o mosaicsPeak(): Correct bin size calculation when binsize=NA.
+    
+Changes in version 1.3.2:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Simplify arguments of mosaicsRunAll(), constructBind(), and export().
+    
+    o Add parallel argument in mosaicsFit().
+
+    o Extensive use of parallel processing/computing.
+
+    o Overall speed improvements in the package.
+    
+    o Update the vignette.
+    
+    o Use parallel package instead of multicore package.
+    
+Changes in version 1.2.5:
+
+    o Correct version number in DESCRIPTION and package?mosaics.
+
+Changes in version 1.2.4:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+    
+    o Add parallel argument in readBins().
+    
+    o Add parallel argument in mosaicsRunAll().
+
+BUG FIXES
+
+    o DESCRIPTION: 'multicore' package in 'Enhances' instead of 'Suggests'.
+
+Changes in version 1.2.3:
+
+NEW FEATURES
+
+    o New model for deeply sequenced ChIP-seq data.
+    
+    o Genome-wide analysis of ChIP-seq data is now available.
+    
+    o Supports more aligned read file formats: eland_result, eland_extended, eland_export, bowtie, SAM, BED, CSEM.
+    
+    o Preprocessing of aligned read files can be done within the R environment using constructBins().
+    
+    o Easier model fitting for the two sample analysis using mosaicsRunAll().
+    
+    o Preprocessing and model fitting become much faster (Rcpp).
+    
+    o Parallel processing/computing is now supported (multicore).
+
+SIGNIFICANT USER-VISIBLE CHANGES
+    
+    o Add constructBins(): Preprocess aligned read files to bin-level files.
+    
+    o Add mosaicsRunAll(): Convenient two sample analysis.
+    
+    o Add bgEst argument in mosaicsFit(): Choose background estimation approach.
+    
+    o Add nCore argument in readBins(): Parallel processing.
+    
+    o Vignettes is now extensively updated.
+    
+    o Rcpp package is required and multicore package is suggested.
+
+DEPRECATED AND DEFUNCT
+
+    o Drop chrID argument in export().
+
+BUG FIXES
+
+    o Fix mosaicsPeak() for the case that no peak is called.
+    
+    o Fix export() by removing unnecessary spaces in output text files.
+    
+Changes in version 1.2.0:
+
+   o BioConductor release 2.9.
+   
+Changes in version 1.0.1:
+
+   o Fixes for 'plot' method of class 'binData'.
+   
+Changes in version 1.0.0:
+
+   o On BioConductor (release 2.8).
