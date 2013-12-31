@@ -38,17 +38,23 @@ setMethod(
 	    if ( parallel ) {
 	        betapH_chr <- mclapply( object@HMMfit, 
 	            function(x) {    
-				    pp0_org <- ( x$aMat[1,] * x$bMat[1,] ) / x$px
-				    pp1_org <- ( x$aMat[2,] * x$bMat[2,] ) / x$px
-				    betapH <- .ff_normalize( pp0_org, pp1_org )	
+				    #pp0_org <- ( x$aMat[1,] * x$bMat[1,] ) / x$px
+				    #pp1_org <- ( x$aMat[2,] * x$bMat[2,] ) / x$px
+				    #betapH <- .ff_normalize( pp0_org, pp1_org )	
+					pp0_org <- ( x$aMat[1,] * x$bMat[1,] )
+					pp1_org <- ( x$aMat[2,] * x$bMat[2,] )
+					betapH <- pp0_org / ( pp0_org + pp1_org )
 				    return(betapH)	            
 	        	}, mc.cores=nCore )    
 	    } else {
 	        betapH_chr <- lapply( object@HMMfit, 
 	            function(x) {    
-				    pp0_org <- ( x$aMat[1,] * x$bMat[1,] ) / x$px
-				    pp1_org <- ( x$aMat[2,] * x$bMat[2,] ) / x$px
-				    betapH <- .ff_normalize( pp0_org, pp1_org )	
+				    #pp0_org <- ( x$aMat[1,] * x$bMat[1,] ) / x$px
+				    #pp1_org <- ( x$aMat[2,] * x$bMat[2,] ) / x$px
+				    #betapH <- .ff_normalize( pp0_org, pp1_org )	
+					pp0_org <- ( x$aMat[1,] * x$bMat[1,] )
+					pp1_org <- ( x$aMat[2,] * x$bMat[2,] )
+					betapH <- pp0_org / ( pp0_org + pp1_org )
 				    return(betapH)	            
 	        	} )
 	    }
@@ -69,8 +75,7 @@ setMethod(
 		        bd_bin_chr <- lapply( object@HMMfit, 
 		            function(x) .ff_viterbi( x$piMat, x$gMat_chr, x$pi0Vec ) 
 		        	)
-		    }
-		    
+		    }		    
 		} else if ( decoding == "posterior" ) {
 			
 			# decoding using posterior decoding
@@ -83,7 +88,7 @@ setMethod(
 	        id <- which( sbetapH <= FDR )
 	        cutoff <- betapH_s[ max(id) ]    
 		    
-    		# decoding using Viterbi algorithm
+    		# decoding using posterior decoding
     		
 	        bd_bin_chr <- lapply( betapH_chr, 
 	            function(x) as.numeric( x <= cutoff )	        

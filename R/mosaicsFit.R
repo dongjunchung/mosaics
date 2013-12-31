@@ -183,11 +183,11 @@ setMethod(
     fitZ1_2S <- .mosaicsZ1_2S( fitZ0, Y=binData@tagCount, 
         pNfit=pNfit, Y_bd_all=Y_bd_all, k=k )
     
-    message( "Info: calculating BIC of fitted models..." )
-    fitBIC_1S <- .calcModelBIC( fitZ1=fitZ1_1S, Y=binData@tagCount, 
-        pNfit=pNfit, k=k, model="1S", type="BIC", npar=9 )
-    fitBIC_2S <- .calcModelBIC( fitZ1=fitZ1_2S, Y=binData@tagCount, 
-        pNfit=pNfit, k=k, model="2S", type="BIC", npar=12 )
+    #message( "Info: calculating BIC of fitted models..." )
+    #fitBIC_1S <- .calcModelBIC( fitZ1=fitZ1_1S, Y=binData@tagCount, 
+    #    pNfit=pNfit, k=k, model="1S", type="BIC", npar=9 )
+    #fitBIC_2S <- .calcModelBIC( fitZ1=fitZ1_2S, Y=binData@tagCount, 
+    #    pNfit=pNfit, k=k, model="2S", type="BIC", npar=12 )
     
     mosaicsEst <- new( "MosaicsFitEst",
         pi0=fitZ0$pi0, a=fitZ0$a,
@@ -198,7 +198,19 @@ setMethod(
     
     rm( fitZ0, fitZ1_1S, fitZ1_2S )
     gc()
-        
+    
+    message( "Info: calculating BIC of fitted models..." )
+    loglik_1S <- .logLik( mosaicsEst=mosaicsEst, tagCount=binData@tagCount, 
+        pNfit=pNfit, k=k, signalModel="1S" )
+    loglik_2S <- .logLik( mosaicsEst=mosaicsEst, tagCount=binData@tagCount, 
+        pNfit=pNfit, k=k, signalModel="2S" )
+    fitBIC_1S <- .calcModelBIC( 
+    	loglik=loglik_1S, n=length(binData@tagCount), nChr=1,
+    	method="mosaics", analysisType="OS", signalModel="1S", type="BIC" )
+    fitBIC_2S <- .calcModelBIC( 
+    	loglik=loglik_2S, n=length(binData@tagCount), nChr=1,
+    	method="mosaics", analysisType="OS", signalModel="2S", type="BIC" )
+       
     mosaicsParam <- new( "MosaicsFitParam", k=k, meanThres=meanThres )
     
     new( "MosaicsFit",
@@ -245,11 +257,11 @@ setMethod(
     fitZ1_2S <- .mosaicsZ1_2S( fitZ0, Y=binData@tagCount, 
         pNfit=pNfit, Y_bd_all=Y_bd_all, k=k )
     
-    message( "Info: calculating BIC of fitted models..." )
-    fitBIC_1S <- .calcModelBIC( fitZ1=fitZ1_1S, Y=binData@tagCount, 
-        pNfit=pNfit, k=k, model="1S", type="BIC", npar=11 )
-    fitBIC_2S <- .calcModelBIC( fitZ1=fitZ1_2S, Y=binData@tagCount, 
-        pNfit=pNfit, k=k, model="2S", type="BIC", npar=14 )
+    #message( "Info: calculating BIC of fitted models..." )
+    #fitBIC_1S <- .calcModelBIC( fitZ1=fitZ1_1S, Y=binData@tagCount, 
+    #    pNfit=pNfit, k=k, model="1S", type="BIC", npar=11 )
+    #fitBIC_2S <- .calcModelBIC( fitZ1=fitZ1_2S, Y=binData@tagCount, 
+    #    pNfit=pNfit, k=k, model="2S", type="BIC", npar=14 )
     
     mosaicsEst <- new( "MosaicsFitEst",
         pi0=fitZ0$pi0, a=fitZ0$a,
@@ -260,6 +272,18 @@ setMethod(
     
     rm( fitZ0, fitZ1_1S, fitZ1_2S )
     gc()
+    
+    message( "Info: calculating BIC of fitted models..." )
+    loglik_1S <- .logLik( mosaicsEst=mosaicsEst, tagCount=binData@tagCount, 
+        pNfit=pNfit, k=k, signalModel="1S" )
+    loglik_2S <- .logLik( mosaicsEst=mosaicsEst, tagCount=binData@tagCount, 
+        pNfit=pNfit, k=k, signalModel="2S" )
+    fitBIC_1S <- .calcModelBIC( 
+    	loglik=loglik_1S, n=length(binData@tagCount), nChr=1,
+    	method="mosaics", analysisType="TS", signalModel="1S", type="BIC" )
+    fitBIC_2S <- .calcModelBIC( 
+    	loglik=loglik_2S, n=length(binData@tagCount), nChr=1,
+    	method="mosaics", analysisType="TS", signalModel="2S", type="BIC" )
         
     mosaicsParam <- new( "MosaicsFitParam", k=k, meanThres=meanThres, s=s, d=d )
     
@@ -302,11 +326,11 @@ setMethod(
     fitZ1_2S <- .mosaicsZ1_2S( fitZ0, Y=binData@tagCount, 
         pNfit=pNfit, Y_bd_all=Y_bd_all, k=k )
     
-    message( "Info: calculating BIC of fitted models..." )
-    fitBIC_1S <- .calcModelBIC( fitZ1=fitZ1_1S, Y=binData@tagCount, 
-        pNfit=pNfit, k=k, model="1S", type="BIC", npar=6 )
-    fitBIC_2S <- .calcModelBIC( fitZ1=fitZ1_2S, Y=binData@tagCount, 
-        pNfit=pNfit, k=k, model="2S", type="BIC", npar=9 )
+    #message( "Info: calculating BIC of fitted models..." )
+    #fitBIC_1S <- .calcModelBIC( fitZ1=fitZ1_1S, Y=binData@tagCount, 
+    #    pNfit=pNfit, k=k, model="1S", type="BIC", npar=6 )
+    #fitBIC_2S <- .calcModelBIC( fitZ1=fitZ1_2S, Y=binData@tagCount, 
+    #    pNfit=pNfit, k=k, model="2S", type="BIC", npar=9 )
     
     mosaicsEst <- new( "MosaicsFitEst",
         pi0=fitZ0$pi0, a=fitZ0$a,
@@ -317,6 +341,18 @@ setMethod(
     
     rm( fitZ0, fitZ1_1S, fitZ1_2S )
     gc()
+    
+    message( "Info: calculating BIC of fitted models..." )
+    loglik_1S <- .logLik( mosaicsEst=mosaicsEst, tagCount=binData@tagCount, 
+        pNfit=pNfit, k=k, signalModel="1S" )
+    loglik_2S <- .logLik( mosaicsEst=mosaicsEst, tagCount=binData@tagCount, 
+        pNfit=pNfit, k=k, signalModel="2S" )
+    fitBIC_1S <- .calcModelBIC( 
+    	loglik=loglik_1S, n=length(binData@tagCount), nChr=1,
+    	method="mosaics", analysisType="IO", signalModel="1S", type="BIC" )
+    fitBIC_2S <- .calcModelBIC( 
+    	loglik=loglik_2S, n=length(binData@tagCount), nChr=1, 
+    	method="mosaics", analysisType="IO", signalModel="2S", type="BIC" )
         
     mosaicsParam <- new( "MosaicsFitParam", k=k, d=d )
     

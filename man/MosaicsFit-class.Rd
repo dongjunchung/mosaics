@@ -2,8 +2,6 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{MosaicsFit-class}
-%\alias{mosaicsPeak,MosaicsFit-method}
-%\alias{estimates,MosaicsFit-method}
 \alias{plot,MosaicsFit,ANY-method}
 \alias{print,MosaicsFit-method}
 \alias{show,MosaicsFit-method}

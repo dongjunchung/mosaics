@@ -9,9 +9,10 @@ Fit MOSAiCS-HMM model.
 }
 \usage{
 mosaicsFitHMM( object, ... )
-\S4method{mosaicsFitHMM}{MosaicsFit}( object, signalModel="2S", binsize=NA, init.FDR=0.05,
-    init.maxgap=200, init.minsize=50, init.thres=10, max.iter=100, eps=1e-20, 
-    parallel=FALSE, nCore=8 )
+\S4method{mosaicsFitHMM}{MosaicsFit}( object, signalModel="2S", binsize=NA,
+	init="mosaics", init.FDR=0.05, 
+	init.maxgap=200, init.minsize=50, init.thres=10, init.piMat=as.matrix(NA),
+	max.iter=100, eps=1e-20, parallel=FALSE, nCore=8 )
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,10 +24,12 @@ mosaicsFitHMM( object, ... )
     \item{binsize}{Size of each bin. Value should be positive integer.
         If \code{binsize=NA}, \code{mosaicsFitHMM} function calcuates the value from data.
         Default is \code{NA}. }        
-    \item{init.FDR}{Parameter for the MOSAiCS-HMM initialization. False discovery rate. Default is 0.05. }  
-    \item{init.maxgap}{Parameter for the MOSAiCS-HMM initialization. Initial nearby peaks are merged if the distance (in bp) between them is less than \code{init.maxgap}. Default is 200.}     
-    \item{init.minsize}{Parameter for the MOSAiCS-HMM initialization. An initial peak is removed if its width is narrower than \code{init.minsize}. Default is 50.}
-    \item{init.thres}{Parameter for the MOSAiCS-HMM initialization. A bin within initial peak is removed if its ChIP tag counts are less than \code{init.thres}. Default is 10.}  
+    \item{init}{Approach to initialize MOSAiCS-HMM. Possible values are \code{"mosaics"} (use MOSAiCS peak calling results for initialization) or \code{"specify"} (explicitly specify transition matrix). Default is \code{"mosaics"}.}
+	\item{init.FDR}{Parameter for the MOSAiCS-HMM initialization. False discovery rate. Default is 0.05. Related only if \code{init="mosaics"}.}  
+    \item{init.maxgap}{Parameter for the MOSAiCS-HMM initialization. Initial nearby peaks are merged if the distance (in bp) between them is less than \code{init.maxgap}. Default is 200. Related only if \code{init="mosaics"}.}     
+    \item{init.minsize}{Parameter for the MOSAiCS-HMM initialization. An initial peak is removed if its width is narrower than \code{init.minsize}. Default is 50. Related only if \code{init="mosaics"}.}
+    \item{init.thres}{Parameter for the MOSAiCS-HMM initialization. A bin within initial peak is removed if its ChIP tag counts are less than \code{init.thres}. Default is 10. Related only if \code{init="mosaics"}.}  
+	\item{init.piMat}{Initial value for transition matrix. The first rows/columns correspond to the non-binding state while the second rows/columns correspond to the binding state. Related only if \code{init="specify"}. If \code{init="specify"} but \code{init.piMat} is not specified, \code{mosaicsFitHMM()} uses its default for the MOSAiCS-HMM initialization.}
     \item{max.iter}{Number of iterations for fitting MOSAiCS-HMM. Default is 100.}     
     \item{eps}{Criterion to stop iterations for fitting MOSAiCS-HMM. Default is 1e-20.}
     \item{parallel}{Utilize multiple CPUs for parallel computing 
@@ -50,7 +53,7 @@ for the fitted MOSAiCS model.
 BIC values and GOF plot can be obtained by applying \code{show} and \code{plot} methods,
 respectively, to the \code{MosaicsFit} class object, which is a fitted MOSAiCS model.
 
-\code{init.FDR}, \code{init.maxgap}, \code{init.minsize}, and \code{init.thres} are the parameters for MOSAiCS-HMM initialization.
+\code{init.FDR}, \code{init.maxgap}, \code{init.minsize}, and \code{init.thres} are the parameters for MOSAiCS-HMM initialization when MOSAiCS peak calling results are used for initialization (\code{init="mosaics"}). If user specifies transition matrix (\code{init="specify"}), only \code{init.piMat} is used for initialization.
 If you use a bin size shorter than the average fragment length of the experiment, 
 we recommend to set \code{init.maxgap} to the average fragment length 
 and \code{init.minsize} to the bin size.
@@ -80,9 +83,12 @@ Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Keles (2011),
 library(mosaicsExample)
 data(exampleFit)
 
-exampleFitHMM <- mosaicsFitHMM( exampleFit, signalModel = "2S", init.FDR = 0.05 )
-examplePeakHMM1 <- mosaicsPeakHMM( exampleFitHMM, decoding="viterbi" )
-examplePeakHMM2 <- mosaicsPeakHMM( exampleFitHMM, FDR = 0.05, decoding="posterior" )
+exampleFitHMM <- mosaicsFitHMM( 
+	exampleFit, signalModel = "2S", init = "mosaics",
+	init.FDR=0.05, init.maxgap=200, init.minsize=50, init.thres=10,
+	parallel=TRUE, nCore=8 )
+examplePeakHMM1 <- mosaicsPeakHMM( exampleFitHMM, decoding = "viterbi" )
+examplePeakHMM2 <- mosaicsPeakHMM( exampleFitHMM, FDR = 0.05, decoding = "posterior" )
 }
 }
 \keyword{models}

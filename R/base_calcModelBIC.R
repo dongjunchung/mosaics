@@ -1,73 +1,38 @@
 
-.calcModelBIC <- function( fitZ1, Y, pNfit, k=3, model="2S", type="BIC", npar )
-{       
-    # parameter estimates (common)
+.calcModelBIC <- function( loglik, n, nChr, 
+	method="mosaics", analysisType="IO", signalModel="2S", type="BIC" )
+{     
+    # calculate number of parameters for each case
     
-    mu_est <- fitZ1$muEst
-    a <- fitZ1$a
-    pi0 <- fitZ1$pi0
-    b_est <- a / mu_est        
-    PYZ0 <- pNfit$PYZ0
+    npar <- switch( analysisType,
+		
+    	OS = 9,
+    	TS = 11,
+    	IO = 6
+    )
     
-    # choose Y>=k
+    if ( method == "mosaicsHMM" ) {
+    	npar <- npar - 1 + ( 1 + 2 ) * nChr
+			# minus: proportion of binding (1)
+			# plus: for each chromosome, 
+			#		initial probability (1) + transition probability (2)
+			# [Note] sum to one constraint
+    }
     
-    id_geqk <- which(Y>=k)      
-    Y_ori <- Y[id_geqk]
-    b_est <- b_est[id_geqk]
-    mu_est <- mu_est[id_geqk]
-    
-    Yk <- Y_ori - k        # use only Y >= k
-    #if(length(which(Y<0))>0 ) Y[which(Y<0)] <- -1 
-    Ykmax <- max(Yk)
-    #ind_ge_k <- which(Y>=0)
-    
-    if ( model=="2S" )
-    {
-        # parameter estimates
-        
-        p1 <- fitZ1$p1
-        b1 <- fitZ1$b1
-        c1 <- fitZ1$c1
-        b2 <- fitZ1$b2
-        c2 <- fitZ1$c2
-        
-        # calculate log likelihood
-        
-        #PYZ1 <- .margDistZ1_2S( Y_ori, pNfit, b1, c1, b2, c2 )
-        PYZ1 <- .margDistZ1_2S( Yk, Ykmax, pNfit, b1, c1, b2, c2 )
-        PYZ1G1 <- PYZ1$MDG1
-        PYZ1G2 <- PYZ1$MDG2    
-        
-        logLik0 <- log( pi0*PYZ0 + (1-pi0)*( p1*PYZ1G1 + (1-p1)*PYZ1G2) )
-        logLik1 <- sum( logLik0[!is.na(logLik0)] )
-    } else if ( model=="1S" )
-    {
-        # parameter estimates
-        
-        b <- fitZ1$b
-        c <- fitZ1$c
-        
-        # calculate log likelihood
-        
-        #PYZ1 <- .margDistZ1_1S( Y_ori, pNfit, b, c )
-        PYZ1 <- .margDistZ1_1S( Yk, Ykmax, pNfit, b, c )
-            
-        logLik0 <- log( pi0*PYZ0 + (1-pi0)*PYZ1 )
-        logLik1 <- sum( logLik0[!is.na(logLik0)] )    
+    if ( signalModel == "2S" ) { 
+    	npar <- npar + 3
+    		# 1S: b, c
+    		# 2S: p1, b1, c2, b2, c2
     }
     
     # calculate BIC
     
-    switch( type,
-        "AIC" = {
-            penalty <- 2            
-        },
-        "BIC" = {
-            n <- length(Y_ori)
-            penalty <- log(n)
-        }
+    penalty <- switch( type,
+        AIC = 2,
+        BIC = log(n)
     )
-    val <- -2 * logLik1 + penalty * npar
+    
+    val <- -2 * loglik + penalty * npar
     
     return(val)
 }

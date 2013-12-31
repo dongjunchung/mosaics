@@ -85,9 +85,14 @@ setClass( Class="MosaicsPeak",
 setClass( Class="MosaicsHMM",
     representation=representation(
         HMMfit="list",
-        inputdata="list",
+        mosaicsEst="MosaicsFitEst",
+		inputdata="list",
+        init="character",
+        initPiMat="matrix",
         peakParam="MosaicsPeakParam",
         binsize="numeric",
-        nRatio="numeric"
+        nRatio="numeric",
+        bicMosaics="numeric",
+        bicMosaicsHMM="numeric"
     )
 )

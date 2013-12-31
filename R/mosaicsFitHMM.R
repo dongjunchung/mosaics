@@ -4,11 +4,13 @@
 setMethod(
     f="mosaicsFitHMM",
     signature="MosaicsFit",
-    definition=function( object, signalModel="2S", binsize=NA,
-    	init.FDR=0.05, init.maxgap=200, init.minsize=50, init.thres=10, 
+    definition=function( object, signalModel="2S", binsize=NA, init="mosaics",
+    	init.FDR=0.05, init.maxgap=200, init.minsize=50, init.thres=10, init.piMat=as.matrix(NA),
     	max.iter=100, eps=1e-20, parallel=FALSE, nCore=8 ) 
     {        
-        # check options: parallel computing (optional)
+        init.piMat <- as.matrix(init.piMat)
+		
+		# check options: parallel computing (optional)
         
         if ( parallel == TRUE ) {
             message( "Use 'parallel' package for parallel computing." )        
@@ -23,12 +25,26 @@ setMethod(
 	    {
 	        stop( "Invalid signal model: should be either '1S' or '2S'!" )
 	    }
+	        
+	    # error treatment: invalid initialization option
+	    
+	    if ( init != "mosaics" && init != "specify" )
+	    {
+	        stop( "Invalid initialization setting: should be either 'mosaics' or 'specify'!" )
+	    }
 	    
 	    ##################################################################
 	    #                                                                #
 	    # calculation of marginal distribution: P( Y | Z )               #
 	    #                                                                #
 	    ##################################################################
+		
+		if ( init == "mosaics" ) {
+			message( "Info: initialize MOSAiCS-HMM using MOSAiCS peak calling results." )
+		} else if ( init == "specify" ) {
+			message( "Info: initialize MOSAiCS-HMM using transition matrix user specified." )
+		}
+		
         
 	    analysisType <- object@mosaicsEst@analysisType
 	        
@@ -96,7 +112,9 @@ setMethod(
 	        FDR=init.FDR, binsize=binsize, 
 	        maxgap=init.maxgap, minsize=init.minsize, thres=init.thres, 
 	        analysisType=analysisType )
-	    peakcall <- fitPeak$bdBin[,2]
+	    peakcall <- fitPeak$bdBin[,3]
+		#table(peakcall)
+	    	# bin-level summary of peak calling results
 	    
 	    rm( fitPH )
 	    gc()
@@ -111,6 +129,9 @@ setMethod(
 	    message( "Info: estimating HMM parameters..." )       
 	    
 	    # split by chromosome
+	    
+	    #dataSet <- cbind( object@coord, peakcall, gMat[1,], gMat[2,], object@tagCount )
+	    #colnames(dataSet) <- c( "coord", "peakcall", "g1", "g2", "Y" )
 	    
 	    switch( analysisType,
 	        OS = {
@@ -134,6 +155,8 @@ setMethod(
 	            	"Y", "X" )
 	        }        
 	    )
+	    
+	    dataSet_chr <- split( as.data.frame(dataSet), object@chrID )
 	            
         # binsize calculation
         
@@ -142,22 +165,38 @@ setMethod(
         }
         
         # HMM estimation & prediction
-	    
-	    dataSet_chr <- split( as.data.frame(dataSet), object@chrID )
     
 	    if ( parallel ) {
 	        out <- mclapply( dataSet_chr, 
 	            function(x) .fitHMM( inputHMM=x, 
-	            	peakcall=peakcall, analysisType=analysisType,
+	            	analysisType=analysisType, init=init, init.piMat=init.piMat,
 	            	nstate=2, binsize=binsize, max.iter=max.iter, eps=eps ),
 	            mc.cores=nCore )    
 	    } else {
 	        out <- lapply( dataSet_chr, 
 	            function(x) .fitHMM( inputHMM=x, 
-	            	peakcall=peakcall, analysisType=analysisType,
+	            	analysisType=analysisType, init=init, init.piMat=init.piMat,
 	            	nstate=2, binsize=binsize, max.iter=max.iter, eps=eps )
 	            )
 	    }
+	    
+	    # BIC calculation
+	    
+	    message( "Info: calculating BIC of fitted models..." )
+	    
+    	if ( signalModel == "1S" ) {
+    		BIC_mosaics <- object@bic1S
+    	} else if ( signalModel == "2S" ) {
+    		BIC_mosaics <- object@bic2S
+    	}
+    	
+    	loglik <- sum( sapply( out, function(x) x$loglik ) )
+    		# assume independence among chromosomes
+    		# loglik = multiplication of loglik for each chromosome
+    	
+    	BIC_mosaicsHMM <- .calcModelBIC( 
+    		loglik=loglik, n=length(object@tagCount), nChr=length(out),
+    		method="mosaicsHMM", analysisType=analysisType, signalModel=signalModel, type="BIC" )
 	        
 	    message( "Info: done!" )
 	    
@@ -168,7 +207,10 @@ setMethod(
 	        FDR=init.FDR, maxgap=init.maxgap, minsize=init.minsize, thres=init.thres,
 	        decoding="posterior" )
 	    new( "MosaicsHMM",         
-	        HMMfit=out, inputdata=dataSet_chr,
-	        peakParam=peakParam, binsize=binsize, nRatio=nRatio )
+	    #    HMMfit=out, mosaicsFit=object, init=init, initPiMat=init.piMat,
+		    HMMfit=out, mosaicsEst=object@mosaicsEst, inputdata=dataSet_chr, 
+			init=init, initPiMat=init.piMat,
+	        peakParam=peakParam, binsize=binsize, nRatio=nRatio,
+	        bicMosaics=BIC_mosaics, bicMosaicsHMM=BIC_mosaicsHMM )
 	}
 )
