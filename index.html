@@ -1,35 +1,38 @@
 <!DOCTYPE html>
 <html>
+
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="MOSAiCS : MOdel-based one and two Sample Analysis and Inference for ChIP-Seq">
 
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>MOSAiCS by dongjunchung</title>
+    <title>MOSAiCS</title>
   </head>
 
   <body>
 
-    <header>
-      <div class="container">
-        <h1>MOSAiCS</h1>
-        <h2>MOdel-based one and two Sample Analysis and Inference for ChIP-Seq</h2>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/dongjunchung/mosaics">View on GitHub</a>
 
-        <section id="downloads">
-          <a href="https://github.com/dongjunchung/mosaics/zipball/master" class="btn">Download as .zip</a>
-          <a href="https://github.com/dongjunchung/mosaics/tarball/master" class="btn">Download as .tar.gz</a>
-          <a href="https://github.com/dongjunchung/mosaics" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
-        </section>
-      </div>
-    </header>
+          <h1 id="project_title">MOSAiCS</h1>
+          <h2 id="project_tagline">MOdel-based one and two Sample Analysis and Inference for ChIP-Seq</h2>
 
-    <div class="container">
-      <section id="main_content">
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/dongjunchung/mosaics/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/dongjunchung/mosaics/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
         <h1>
-<a name="mosaics" class="anchor" href="#mosaics"><span class="octicon octicon-link"></span></a>mosaics</h1>
+<a id="mosaics" class="anchor" href="#mosaics" aria-hidden="true"><span class="octicon octicon-link"></span></a>mosaics</h1>
 
 <p>MOSAiCS (MOdel-based one and two Sample Analysis and Inference for ChIP-Seq) is a flexible statistical framework for  the one- (ChIP sample) and two-sample (ChIP sample and matched control sample) analysis of ChIP-seq data. In addition, MOSAiCS-HMM extends MOSAiCS with a Hidden Markov Model (HMM) structure to account for spatial dependence and call broad peaks as in the case of histone modifications. mosaics package provides computationally efficient and user friendly interface to process ChIP-seq data, implement exploratory analysis, fit MOSAiCS and MOSAiCS-HMM models, call peaks, and export peak lists for downstream analysis.</p>
 
@@ -39,10 +42,10 @@
 biocLite("mosaics")
 </code></pre>
 
-<p>MOSAiCS vignette provides a good start point for the ChIP-seq data analysis using mosaics package and it can be found at <a href="http://www.bioconductor.org/packages/2.13/bioc/vignettes/mosaics/inst/doc/mosaics-example.pdf">http://www.bioconductor.org/packages/2.13/bioc/vignettes/mosaics/inst/doc/mosaics-example.pdf</a>. Please check <a href="http://groups.google.com/group/mosaics_user_group">http://groups.google.com/group/mosaics_user_group</a> for discussions and questions regarding ChIP-seq data analysis using mosaics package. You can track development of mosaics package at <a href="http://github.com/dongjunchung/mosaics">http://github.com/dongjunchung/mosaics</a>.</p>
+<p>MOSAiCS vignette provides a good start point for the ChIP-seq data analysis using mosaics package and it can be found at <a href="http://www.bioconductor.org/packages/release/bioc/vignettes/mosaics/inst/doc/mosaics-example.pdf">http://www.bioconductor.org/packages/release/bioc/vignettes/mosaics/inst/doc/mosaics-example.pdf</a>. Please check <a href="http://groups.google.com/group/mosaics_user_group">http://groups.google.com/group/mosaics_user_group</a> for discussions and questions regarding ChIP-seq data analysis using mosaics package. You can track development of mosaics package at <a href="http://github.com/dongjunchung/mosaics">http://github.com/dongjunchung/mosaics</a>.</p>
 
 <h1>
-<a name="development" class="anchor" href="#development"><span class="octicon octicon-link"></span></a>Development</h1>
+<a id="development" class="anchor" href="#development" aria-hidden="true"><span class="octicon octicon-link"></span></a>Development</h1>
 
 <p>To install the development version of mosaics, it's easiest to use the devtools package:</p>
 
@@ -52,12 +55,20 @@ install_github("dongjunchung/mosaics")
 </code></pre>
 
 <h1>
-<a name="references" class="anchor" href="#references"><span class="octicon octicon-link"></span></a>References</h1>
+<a id="references" class="anchor" href="#references" aria-hidden="true"><span class="octicon octicon-link"></span></a>References</h1>
 
 <p>Kuan PF, Chung D, Pan G, Thomson JA, Stewart R, and Keles S (2011), "A statistical framework for the analysis of ChIP-Seq data," <em>Journal of the American Statistical Association</em>, 106: 891-903.</p>
 
 <p>Chung D, Zhang Q, Keles S (2013), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data," Datta S and Nettleton D (eds.), <em>Statistical Analysis of Next Generation Sequence Data</em>, Springer.</p>
       </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">MOSAiCS maintained by <a href="https://github.com/dongjunchung">dongjunchung</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
     </div>
 
               <script type="text/javascript">
@@ -70,6 +81,7 @@ install_github("dongjunchung/mosaics")
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
+
 
   </body>
 </html>
