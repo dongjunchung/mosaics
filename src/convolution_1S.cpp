@@ -1,24 +1,33 @@
 
 #include <Rcpp.h>
 
-using namespace Rcpp;
+RcppExport SEXP convolution_1S_cpp( 
+	SEXP y, SEXP mu, SEXP mu_U, SEXP pN, SEXP pS ) { 
 
-RCPP_FUNCTION_5(NumericVector,convolution_1S_cpp,IntegerVector y,NumericVector mu,NumericVector mu_U,NumericMatrix pN,NumericVector pS) { 
+	using namespace Rcpp;
+	
+	// initialization
+	
+	Rcpp::IntegerVector yVec( y );
+	Rcpp::NumericVector muVec( mu );
+	Rcpp::NumericVector muUVec( mu_U );
+	Rcpp::NumericMatrix pNMat( pN );
+	Rcpp::NumericVector pSVec( pS );
 	
 	// result vector
 	
-	NumericVector conv( y.size() );
+	NumericVector conv( yVec.size() );
 	
 	// convolution
 	// - length of y = length of mu
 	// - rows of pN match mu_U
 	
-	for ( int i=0; i<y.size(); i++ ) {
+	for ( int i=0; i<yVec.size(); i++ ) {
 		conv[i] = 0.0;
-		for ( int j=0; j<mu_U.size(); j++ ) {
-			if ( mu_U[j]==mu[i] ) {
-				for ( int k=0; k<=y[i]; k++ ) {
-					conv[i] += pS[(y[i]-k)] * pN(j,k);
+		for ( int j=0; j<muUVec.size(); j++ ) {
+			if ( muUVec[j]==muVec[i] ) {
+				for ( int k=0; k<=yVec[i]; k++ ) {
+					conv[i] += pSVec[(yVec[i]-k)] * pNMat(j,k);
 				}
 			}
 		}

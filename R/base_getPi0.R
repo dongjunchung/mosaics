@@ -1,5 +1,5 @@
 
-.getPi0 <- function( mu, a, Y_freq )
+.getPi0 <- function( mu, a, Y_freq, bgEst )
 {
     # generate simulated tag counts
     
@@ -9,6 +9,7 @@
     # calculate pi0
     
     if ( sum(Y_freq[ as.numeric(names(Y_freq))<=2 ])/sum(Y_freq) > 0.5 ) { 
+	#if ( bgEst == "matchLow" ) {
         # if 0, 1, 2 counts are more than 50%, use 0, 1, 2 counts
         
         #print("pi0 estimation based on 0,1,2 counts")
@@ -22,6 +23,7 @@
         
         pi0 <- min( num_pi0/denom_pi0, 0.99 )
     } else {
+	#} else if ( bgEst == "rMOM" ) {
         # otherwise, estimate pi0 by searching from mode of Y
         # until pi0 value converges or 90% bins are used
         
@@ -78,7 +80,7 @@
         #while ( abs(pi0est[width+2]-pi0est[width+1]) > 1e-6 ) {
         #while ( cumFreq/sum(Y_freq) <= 0.99 ) {
         while ( width <= 2*Y_IQR ) {
-            # update pi0 valuee by extending width
+            # update pi0 value by extending width
             # -> to avoid the case that pi0 estimate is based on too many bins
             
             width <- width + 1

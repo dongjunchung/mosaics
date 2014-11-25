@@ -41,7 +41,8 @@ mosaicsFitHMM( object, ... )
     \item{...}{ Other parameters to be passed through to generic \code{mosaicsFitHMM}.}
 }
 \details{
-\code{mosaicsFitHMM} and \code{mosaicsPeakHMM} are developed to identify broad peaks such as histone modifications. 
+\code{mosaicsFitHMM} and \code{mosaicsPeakHMM} are developed to identify broad peaks such as histone modifications,
+using Hidden Markov Model (HMM) approach, as proposed in Chung et al. (2014). 
 If you are interested in identifying narrow peaks such as transcription factor binding sites,
 please use \code{mosaicsPeak} instead of \code{mosaicsFitHMM} and \code{mosaicsPeakHMM}.
 
@@ -72,6 +73,8 @@ Construct \code{MosaicsHMM} class object.
 Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Keles (2011), 
 "A Statistical Framework for the Analysis of ChIP-Seq Data", 
 \emph{Journal of the American Statistical Association}, Vol. 106, pp. 891-903.
+
+Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
 \author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles }
 \seealso{

@@ -25,6 +25,8 @@
     # round mu
 
     mu_round <- round(mu_est,2)
+	mu_round[ mu_round == 0 ] <- 0.01
+		# to avoid NaN from dnbinom())
     #if ( length(which(Y<0)) > 0 ) mu_round[which(Y<0)] <- 0
     mu_round_U <- unique(mu_round)  
     

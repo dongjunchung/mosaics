@@ -18,7 +18,7 @@ mosaicsRunAll(
     reportExploratory=FALSE, exploratoryFile=NULL, 
     reportGOF=FALSE, gofFile=NULL, 
     PET=FALSE, byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
-    FDR=0.05, fragLen=200, binSize=200, capping=0, bgEst="automatic", d=0.25, 
+    FDR=0.05, fragLen=200, binSize=200, capping=0, bgEst="rMOM", d=0.25, 
     signalModel="BIC", maxgap=200, minsize=50, 
     thres=10, parallel=FALSE, nCore=8 )
 }
@@ -128,7 +128,8 @@ mosaicsRunAll(
     "rMOM" (estimation using robust method of moment (MOM)).
     If \code{bgEst="automatic"},
             this method tries to make the best guess for \code{bgEst}, 
-            based on the data provided.}    
+            based on the data provided.
+        Default is \code{bgEst="rMOM"}. }    
   \item{d}{Parameter for estimating background distribution.
     Default is 0.25. } 
   \item{signalModel}{Signal model.    

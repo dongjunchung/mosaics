@@ -7,7 +7,7 @@ mosaicsRunAll <- function(
     reportExploratory=FALSE, exploratoryFile=NULL, 
     reportGOF=FALSE, gofFile=NULL, 
     PET=FALSE, byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
-    FDR=0.05, fragLen=200, binSize=200, capping=0, bgEst="automatic", d=0.25, 
+    FDR=0.05, fragLen=200, binSize=200, capping=0, bgEst="rMOM", d=0.25, 
     signalModel="BIC", maxgap=200, minsize=50, thres=10, parallel=FALSE, nCore=8 ) {
     
     analysisType <- "IO"

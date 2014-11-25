@@ -1,5 +1,5 @@
 
-.rlmFit_TS  <- function( parEst, mean_thres=1, s=2, d=0.25, Y, M, GC, X )
+.rlmFit_TS  <- function( parEst, mean_thres=1, s=2, d=0.25, bgEst, Y, M, GC, X )
 {
     #library(MASS)
     #library(splines)
@@ -109,7 +109,7 @@
         coef_rlm[4]*MX_u_all + 
         coef_rlm[5]*GC1X_u_all + coef_rlm[6]*GC2X_u_all + coef_rlm[7]*GC3X_u_all )
 
-    pi0 <- .getPi0( muEst, a_wq_strata, parEst$Y_freq )
+    pi0 <- .getPi0( muEst, a_wq_strata, parEst$Y_freq, bgEst=bgEst )
     
     betaEst <- coef(fit_trunc_adj)
     names(betaEst) <- c( "(intercept)", "control(small)", "control(large)", "log2(M+1)",

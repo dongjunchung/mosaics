@@ -1,5 +1,5 @@
 
-.rlmFit_IO <- function( parEst, d=0.25, Y, X, inputTrunc )
+.rlmFit_IO <- function( parEst, d=0.25, trans="log", bgEst, Y, X, inputTrunc )
 {    
     #library(MASS)
     
@@ -39,16 +39,23 @@
     #X[ which(X>trunc) ] <- trunc                  # [Note] we need truncation of X for input only analysis
     X[ which(X>inputTrunc) ] <- inputTrunc
     
-    Xtrans <- X_u^d    
+	if ( trans == "log" ) {
+		Xtrans <- log10( X_u + 1 ) 
+	} else if ( trans == "power" ) {
+    	Xtrans <- X_u^d   
+	}
     fit_trunc_adj <- rlm( log(mu_u) ~ Xtrans, weights=n_u/sum(n_u) )
         
         
     # return estimates
     
     coef_rlm <- coef(fit_trunc_adj)
-    muEst <- exp( coef_rlm[1] + coef_rlm[2]*(X^d) )
-
-    pi0 <- .getPi0( muEst, a_w_strata, parEst$Y_freq )
+    if ( trans == "log" ) {
+		muEst <- exp( coef_rlm[1] + coef_rlm[2] * log10( X + 1 ) )
+	} else if ( trans == "power" ) {
+		muEst <- exp( coef_rlm[1] + coef_rlm[2]*(X^d) )
+	}
+    pi0 <- .getPi0( muEst, a_w_strata, parEst$Y_freq, bgEst=bgEst )
     
     betaEst <- coef(fit_trunc_adj)
     names(betaEst) <- c( "(intercept)", "input" )

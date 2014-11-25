@@ -1,32 +1,70 @@
-Changes in version 1.5.7:
 
-SIGNIFICANT USER-VISIBLE CHANGES
-
-    o Add mosaicsHMM(): Chromosome-wise fitting for more stable fitting and prediction. Supports parallel computing. Add arguments for maxgap, minsize, and thres.
-
-Changes in version 1.5.6:
-
-SIGNIFICANT USER-VISIBLE CHANGES
-
-    o Add mosaicsHMM(): Hidden-Markov-Model-based MOSAiCS peak calling to identify broad peaks such as histone modifications.
-
-Changes in version 1.5.5:
+Changes in version 2.0.1:
 
 BUG FIXES
 
-    o constructBins() & export(): Use correct base for BED file.
+    o constructBins() & generateWig(): the new error in version 2.0.0 fixed.
+    
+	
+Changes in version 2.0.0:
 
-Changes in version 1.5.4:
+   o BioConductor release 3.0.
+   
+   
+Changes in version 1.99.4:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+  
+    o Typos in the vignette are fixed.
+	
+	
+Changes in version 1.99.3:
+
+BUG FIXES
+
+    o mosaicsFit(): mismatch between function and help fixed.
+	
+	
+Changes in version 1.99.2:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+  
+    o mosaicsFit(): Sets bgEst="rMOM" as default.
+
+    o Help documents are polished and updated.
+
+    o Vignette is updated.
+	
+	
+Changes in version 1.99.1:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o mosaicsFitHMM() & mosaicsPeakHMM(): Hidden-Markov-Model-based MOSAiCS model fitting & peak calling, respectively, to identify broad peaks such as histone modifications.
+	
+    o Add new class 'MosaicsHMM' with methods show(), plot(), & estimates().
+	
+    o mosaicsFit(): Introduces a new argument 'trans'.
+	
+    o mosaicsFit(): Stability & robustness of model fitting were improved.
 
     o Polish help documents of constructBins(), generateWig(), and mosaicsRunAll().
+	
+    o Tested to work with >= R 3.0 properly.
 
-    o Polish the vignette.
+BUG FIXES
+
+    o constructBins() & export(): Use correct base for BED file (one base shift).
+	
+    o Reflect the changes in Rcpp packages that mosaics package depends on.
     
+	
 Changes in version 1.5.3:
 
 BUG FIXES
 
     o mosaicsRunAll(): Bug fix when byChr = TRUE.
+
 
 Changes in version 1.5.2:
 
@@ -48,6 +86,7 @@ BUG FIXES
 
     o mosaicsRunAll(): Bug fix for excludeChr & handling the full path for chipFile and controlFile.
 
+
 Changes in version 1.5.1:
 
 SIGNIFICANT USER-VISIBLE CHANGES
@@ -66,6 +105,11 @@ BUG FIXES
     o mosaicsFit(): Minor changes in two-signal-component model fitting.
 
     o mosaicsPeak(): No warning with the updated IRanges package.
+    
+	
+Changes in version 1.4.0:
+
+   o BioConductor release 2.10.
 
 
 Changes in version 1.3.4:

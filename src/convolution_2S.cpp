@@ -1,29 +1,39 @@
 
 #include <Rcpp.h>
 
-using namespace Rcpp;
+RcppExport SEXP convolution_2S_cpp( 
+	SEXP y, SEXP mu, SEXP mu_U, SEXP pN, SEXP pS1, SEXP pS2 ) { 
 
-RCPP_FUNCTION_6(NumericVector,convolution_2S_cpp,IntegerVector y,NumericVector mu,NumericVector mu_U,NumericMatrix pN,NumericVector pS1,NumericVector pS2) {
+	using namespace Rcpp;
+	
+	// initialization
+	
+	Rcpp::IntegerVector yVec( y );
+	Rcpp::NumericVector muVec( mu );
+	Rcpp::NumericVector muUVec( mu_U );
+	Rcpp::NumericMatrix pNMat( pN );
+	Rcpp::NumericVector pS1Vec( pS1 );
+	Rcpp::NumericVector pS2Vec( pS2 );
 	
 	// result vector
 	
-	NumericVector conv1(y.size());
-	NumericVector conv2(y.size());
-	NumericVector conv(2*y.size());
+	Rcpp::NumericVector conv1(yVec.size());
+	Rcpp::NumericVector conv2(yVec.size());
+	Rcpp::NumericVector conv(2*yVec.size());
 	int conv_index = 0;
 	
 	// convolution
 	// - length of y = length of mu
 	// - rows of pN match mu_U
 	
-	for ( int i=0; i<y.size(); i++ ) {
+	for ( int i=0; i<yVec.size(); i++ ) {
 		conv1[i] = 0.0;
 		conv2[i] = 0.0;
-		for ( int j=0; j<mu_U.size(); j++ ) {
-			if ( mu_U[j]==mu[i] ) {
-				for ( int k=0; k<=y[i]; k++ ) {
-					conv1[i] += pS1[(y[i]-k)] * pN(j,k);
-					conv2[i] += pS2[(y[i]-k)] * pN(j,k);
+		for ( int j=0; j<muUVec.size(); j++ ) {
+			if ( muUVec[j]==muVec[i] ) {
+				for ( int k=0; k<=yVec[i]; k++ ) {
+					conv1[i] += pS1Vec[(yVec[i]-k)] * pNMat(j,k);
+					conv2[i] += pS2Vec[(yVec[i]-k)] * pNMat(j,k);
 				}
 			}
 		}
@@ -31,7 +41,7 @@ RCPP_FUNCTION_6(NumericVector,convolution_2S_cpp,IntegerVector y,NumericVector m
 	
 	// summarize results
 	
-	for ( int i=0; i<y.size(); i++ ) {
+	for ( int i=0; i<yVec.size(); i++ ) {
 		conv[conv_index] = conv1[i];
 		conv_index++;
 		conv[conv_index] = conv2[i];
