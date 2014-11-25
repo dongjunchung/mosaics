@@ -10,7 +10,7 @@ source("http://bioconductor.org/biocLite.R")
 biocLite("mosaics")
 ```
 
-MOSAiCS vignette provides a good start point for the ChIP-seq data analysis using mosaics package and it can be found at http://www.bioconductor.org/packages/2.13/bioc/vignettes/mosaics/inst/doc/mosaics-example.pdf. Please check http://groups.google.com/group/mosaics_user_group for discussions and questions regarding ChIP-seq data analysis using mosaics package. You can track development of mosaics package at http://github.com/dongjunchung/mosaics.
+MOSAiCS vignette provides a good start point for the ChIP-seq data analysis using mosaics package and it can be found at http://www.bioconductor.org/packages/release/bioc/vignettes/mosaics/inst/doc/mosaics-example.pdf. Please check http://groups.google.com/group/mosaics_user_group for discussions and questions regarding ChIP-seq data analysis using mosaics package. You can track development of mosaics package at http://github.com/dongjunchung/mosaics.
 
 Development
 ===========
