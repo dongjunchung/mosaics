@@ -9,7 +9,7 @@ Call broad peaks using \code{MosaicsHMM} class object, which is a fitted MOSAiCS
 }
 \usage{
 mosaicsPeakHMM( object, ... )
-\S4method{mosaicsPeakHMM}{MosaicsHMM}( object, FDR=0.05, decoding="viterbi",
+\S4method{mosaicsPeakHMM}{MosaicsHMM}( object, FDR=0.05, decoding="posterior",
     binsize=NA, maxgap=0, minsize=0, thres=0, 
     parallel=FALSE, nCore=8 )
 }
@@ -20,7 +20,7 @@ mosaicsPeakHMM( object, ... )
     \item{FDR}{False discovery rate. Default is 0.05. Not relevant when \code{decoding="viterbi"}. }  
     \item{decoding}{Approach to determine the undelying state.
         Possible values are "viterbi" (Viterbi algorithm) and
-        "posterior" (posterior decoding). Default is "viterbi". }  
+        "posterior" (posterior decoding). Default is "posterior". }  
     \item{binsize}{Size of each bin. Value should be positive integer.
         If \code{binsize=NA}, \code{mosaicsPeakHMM} function calcuates the value from data.
         Default is \code{NA}. }        

@@ -15,7 +15,9 @@ export(object, ...)
     \item{object}{Object of class \code{MosaicsPeak},
         peak calling results obtained using method \code{mosaicsPeak}. }
     \item{type}{Format of the exported file.
-        Possible values are \code{"txt"}, \code{"bed"}, and \code{"gff"}. See Details. }
+        Possible values are \code{"txt"}, \code{"bed"}, \code{"gff"},
+        \code{"narrowPeak"}, and \code{"broadPeak"}.
+        See Details. }
     \item{filename}{Name of the exported file. }    
     \item{...}{ Other parameters to be passed through to generic \code{export}.}
 }
@@ -31,14 +33,18 @@ average mappability score, and average GC content score
 (when mappability and GC content scores are used in the analysis) in each peak. 
 \code{type="bed"} and \code{type="gff"} export peak calling results in standard BED and GFF file formats,
 respectively, where score is the average ChIP tag counts in each peak.
+\code{type="narrowPeak"} and \code{type="broadPeak"} export peak calling results in ENCODE narrowPeak and broadPeak file formats,
+respectively, where score, signalValue, and pValue are average log base 2 ratio of ChIP over input tag counts (or average ChIP tag count, if matched control sample is not provided), ChIP signal at the summit, and -log10 transformation of minimum posterior probability, respectively, in each peak.
 If no peak is detected, \code{export} method will not generate any file.
 }
 \references{
 Kuan, PF, D Chung, JA Thomson, R Stewart, and S Keles (2011), 
 "A Statistical Framework for the Analysis of ChIP-Seq Data", 
 \emph{Journal of the American Statistical Association}, Vol. 106, pp. 891-903.
+
+Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
-\author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles }
+\author{ Dongjun Chung, Pei Fen Kuan, Rene Welch, Sunduz Keles }
 \seealso{
 \code{\link{mosaicsPeak}}, \code{\linkS4class{MosaicsPeak}}.
 }

@@ -58,35 +58,27 @@ setClass( Class="MosaicsFit",
     )
 )
 
-# MOSAiCS peak calling & HMM
+# peak list
 
 setClass( Class="MosaicsPeakParam",
     representation=representation(
-        analysisType="character",
-        signalModel="character",
-        FDR="numeric",
-        maxgap="numeric",
-        minsize="numeric",
-        thres="numeric",
-        decoding="character"
+      analysisType="character",
+      signalModel="character",
+      FDR="numeric",
+      maxgap="numeric",
+      minsize="numeric",
+      thres="numeric",
+      decoding="character"
     )
 )
 
-setClass( Class="MosaicsPeak",
-    representation=representation(
-        peakList="data.frame",
-        peakParam="MosaicsPeakParam",
-        bdBin="data.frame",
-        postProb="data.frame",
-        empFDR="numeric"
-    )
-)
+# MOSAiCS-HMM model fit
 
 setClass( Class="MosaicsHMM",
     representation=representation(
         HMMfit="list",
         mosaicsEst="MosaicsFitEst",
-		inputdata="list",
+	    	inputdata="list",
         init="character",
         initPiMat="matrix",
         peakParam="MosaicsPeakParam",
@@ -94,5 +86,28 @@ setClass( Class="MosaicsHMM",
         nRatio="numeric",
         bicMosaics="numeric",
         bicMosaicsHMM="numeric"
+    )
+)
+
+# read-level data
+
+setClass( Class="TagData",
+  representation=representation(
+    coverage="list",
+    read="list",
+    seqDepth="numeric"
+  )
+)
+
+
+setClass( Class="MosaicsPeak",
+    representation=representation(
+        peakList="data.frame",
+        peakParam="MosaicsPeakParam",
+        bdBin="data.frame",
+        postProb="data.frame",
+        empFDR="numeric",
+        tagLoaded="logical",
+        tagData="TagData"
     )
 )

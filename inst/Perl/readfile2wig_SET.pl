@@ -56,7 +56,7 @@ if ( $chrinfo eq "Y" ) {
 		my ( $chrname, $chrsize ) = split /\s+/, $_;
 		
 		$bin_start = 0;
-		$bin_stop = int($chrsize/$span);
+		$bin_stop = int(($chrsize - 1)/$span);
 	        
 		for (my $i = $bin_start; $i <= $bin_stop; $i++) {
 			${$bin_count{$chrname}}[$i] = 0;
@@ -144,24 +144,56 @@ while(<IN>){
     
     # update bin count
     
-    if ( exists $bin_count{$chrt} ) {
-        # if there is already a matrix for chromosome, update it
-        
-        $bin_start = int(($pos-1)/$span) ;
-        $bin_stop = int(($pos + $L_tmp - 1 - 1 )/$span) ;
-        for (my $i = $bin_start; $i <= $bin_stop; $i++) {
-            ${$bin_count{$chrt}}[$i] += $prob;
-        }
-    } else {
-        # if there is no matrix for chromosome yet, construct one
-        
-        @{$bin_count{$chrt}} = ();
-        $bin_start = int(($pos-1)/$span) ;
-        $bin_stop = int(($pos + $L_tmp - 1 - 1 )/$span) ;
-        for (my $i = $bin_start; $i <= $bin_stop; $i++) {
-            ${$bin_count{$chrt}}[$i] += $prob;
-        }
-    }
+	if ( $chrinfo eq "N" ) {
+		# if chrfile is not provided, constrct wig files based on data
+		
+		if ( exists $bin_count{$chrt} ) {
+			# if there is already a matrix for chromosome, update it
+			
+			$bin_start = int(($pos-1)/$span) ;
+			$bin_stop = int(($pos + $L_tmp - 1 - 1 )/$span) ;
+			for (my $i = $bin_start; $i <= $bin_stop; $i++) {
+				${$bin_count{$chrt}}[$i] += $prob;
+			}
+		} else {
+			# if there is no matrix for chromosome yet, construct one
+			
+			@{$bin_count{$chrt}} = ();
+			$bin_start = int(($pos-1)/$span) ;
+			$bin_stop = int(($pos + $L_tmp - 1 - 1 )/$span) ;
+			for (my $i = $bin_start; $i <= $bin_stop; $i++) {
+				${$bin_count{$chrt}}[$i] += $prob;
+			}
+		}
+	} else {
+		# if chrfile is provided, consider only chrID & coord that already appear in chrfile
+		
+		if ( exists $bin_count{$chrt} ) {
+			# calculate coordinates under consideration
+			
+			$bin_start = int(($pos-1)/$span) ;
+			$bin_stop = int(($pos + $L_tmp - 1 - 1 )/$span) ;
+			
+			# check whether coordinates do not exceed the chromosome size
+			
+			if ( $bin_start > scalar(@{$bin_count{$chrt}}) - 1 ) {
+				# ignore if a read is located outside the chromosome
+				
+				next;
+			}
+			
+			if ( $bin_stop > scalar(@{$bin_count{$chrt}}) - 1 ) {
+				# trim if a read only partially overlaps the chromosome
+				
+				$bin_stop = scalar(@{$bin_count{$chrt}}) - 1;
+			}
+			
+			# update density
+			for (my $i = $bin_start; $i <= $bin_stop; $i++) {
+				${$bin_count{$chrt}}[$i] += $prob;
+			}
+		}
+	}
 }
     
 close IN;

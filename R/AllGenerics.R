@@ -62,6 +62,26 @@ setGeneric( "mosaicsPeakHMM",
 
 # generic methods for "MosaicsPeak" class
 
+setGeneric( "extractReads",
+    function( object, ... )
+    standardGeneric("extractReads")
+)
+
+setGeneric( "findSummit",
+    function( object, ... )
+    standardGeneric("findSummit")
+)
+
+setGeneric( "adjustBoundary",
+    function( object, ... )
+    standardGeneric("adjustBoundary")
+)
+
+setGeneric( "filterPeak",
+    function( object, ... )
+    standardGeneric("filterPeak")
+)
+
 setGeneric( "peakList",
     function( object, ... )
     standardGeneric("peakList")
@@ -80,4 +100,19 @@ setGeneric( "bdBin",
 setGeneric( "empFDR",
     function( object, ... )
     standardGeneric("empFDR")
+)
+
+setGeneric( "coverage",
+    function( object, ... )
+    standardGeneric("coverage")
+)
+
+setGeneric( "read",
+    function( object, ... )
+    standardGeneric("read")
+)
+
+setGeneric( "seqDepth",
+    function( object, ... )
+    standardGeneric("seqDepth")
 )

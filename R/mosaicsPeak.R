@@ -94,9 +94,13 @@ setMethod(
         postProb <- data.frame( object@chrID, object@coord, fitPH$pH0,
         	stringsAsFactors=FALSE )
         colnames(postProb) <- c( "chrID", "coord", "PostProb" )
+      
+        tagDataEmpty <- new( "TagData", 
+            read=list(), coverage=list(), seqDepth=c(1,1) )   
         
         new( "MosaicsPeak",         
             peakList=peakList, peakParam=peakParam, 
-            bdBin=fitPeak$bdBin, postProb=postProb, empFDR=fitPeak$empFDR )
+            bdBin=fitPeak$bdBin, postProb=postProb, empFDR=fitPeak$empFDR,
+            tagLoaded=FALSE, tagData=tagDataEmpty )
     }
 )

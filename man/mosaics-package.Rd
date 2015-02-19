@@ -13,8 +13,8 @@ a statistical framework to analyze one-sample or two-sample ChIP-seq data.
 \tabular{ll}{
 Package: \tab mosaics\cr
 Type: \tab Package\cr
-Version: \tab 2.0.1\cr
-Date: \tab 2014-11-25\cr
+Version: \tab 2.9.0\cr
+Date: \tab 2015-02-31\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
@@ -88,7 +88,6 @@ export( examplePeak, type = "bed", filename = "./TSpeakList.bed" )
 export( examplePeak, type = "gff", filename = "./TSpeakList.gff" )
 
 exampleFitHMM <- mosaicsFitHMM( exampleFit, signalModel = "2S", init.FDR = 0.05 )
-examplePeakHMM1 <- mosaicsPeakHMM( exampleFitHMM, decoding="viterbi" )
-examplePeakHMM2 <- mosaicsPeakHMM( exampleFitHMM, FDR = 0.05, decoding="posterior" )
+examplePeakHMM <- mosaicsPeakHMM( exampleFitHMM, FDR = 0.05, decoding="posterior" )
 }
 }

@@ -1,6 +1,10 @@
 useDynLib(mosaics)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
 
-import( methods, graphics, Rcpp, MASS, splines, lattice, IRanges )
+import( methods, graphics, Rcpp, MASS, splines, lattice )
+
+import( IRanges, GenomicRanges, GenomicAlignments, Rsamtools, GenomeInfoDb, S4Vectors )
 
 export( constructBins, readBins, mosaicsFit, mosaicsPeak, mosaicsRunAll, generateWig )
 

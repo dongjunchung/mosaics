@@ -21,9 +21,9 @@ constructBins( infile=NULL, fileFormat=NULL, outfileLoc="./",
     for SET data (\code{PET = FALSE}):
         \code{"eland_result"} (Eland result), \code{"eland_extended"} (Eland extended),
         \code{"eland_export"} (Eland export), \code{"bowtie"} (default Bowtie),
-        \code{"sam"} (SAM), \code{"bed"} (BED), and \code{"csem"} (CSEM).
+        \code{"sam"} (SAM), \code{"bam"} (BAM), \code{"bed"} (BED), and \code{"csem"} (CSEM).
     For PET data (\code{PET = TRUE}), the following aligned read file formats are allowed:
-        \code{"eland_result"} (Eland result) and \code{"sam"} (SAM).
+        \code{"eland_result"} (Eland result), \code{"sam"} (SAM), and \code{"bam"} (BAM).
 }
   \item{outfileLoc}{
     Directory of processed bin-level files. 
@@ -98,9 +98,9 @@ Constructed bin-level files can be loaded into the R environment using the metho
 for SET data (\code{PET = FALSE}): 
 Eland result (\code{"eland_result"}), Eland extended (\code{"eland_extended"}),
 Eland export (\code{"eland_export"}), default Bowtie (\code{"bowtie"}), 
-SAM (\code{"sam"}), BED (\code{"bed"}), and CSEM (\code{"csem"}).
+SAM (\code{"sam"}), \code{"bam"} (BAM), BED (\code{"bed"}), and CSEM (\code{"csem"}).
 For PET data (\code{PET = TRUE}), the following aligned read file formats are allowed:
-\code{"eland_result"} (Eland result) and \code{"sam"} (SAM).
+\code{"eland_result"} (Eland result), \code{"sam"} (SAM), and \code{"bam"} (BAM).
 
 If input file format is neither BED nor CSEM BED,
 this method retains only reads mapping uniquely to the reference genome. 
@@ -112,6 +112,8 @@ Processed bin-level files are exported to the directory specified in \code{outfi
 Kuan, PF, D Chung, JA Thomson, R Stewart, and S Keles (2011), 
 "A Statistical Framework for the Analysis of ChIP-Seq Data", 
 \emph{Journal of the American Statistical Association}, Vol. 106, pp. 891-903.
+
+Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
 \author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles }
 \seealso{
