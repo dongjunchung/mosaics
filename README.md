@@ -1,7 +1,7 @@
 mosaics
 =======
 
-MOSAiCS (MOdel-based one and two Sample Analysis and Inference for ChIP-Seq) is a flexible statistical framework for  the one- (ChIP sample) and two-sample (ChIP sample and matched control sample) analysis of ChIP-seq data. In addition, MOSAiCS-HMM extends MOSAiCS with a Hidden Markov Model (HMM) structure to account for spatial dependence and call broad peaks as in the case of histone modifications. mosaics package provides computationally efficient and user friendly interface to process ChIP-seq data, implement exploratory analysis, fit MOSAiCS and MOSAiCS-HMM models, call peaks, and export peak lists for downstream analysis.
+MOSAiCS (MOdel-based one and two Sample Analysis and Inference for ChIP-Seq) is a flexible statistical framework for  the one- (ChIP sample) and two-sample (ChIP sample and matched control sample) analysis of ChIP-seq data. In addition, MOSAiCS-HMM extends MOSAiCS with a Hidden Markov Model (HMM) structure to account for spatial dependence and call broad peaks as in the case of histone modifications. mosaics package provides computationally efficient and user friendly interface to process ChIP-seq data, implement exploratory analysis, fit MOSAiCS and MOSAiCS-HMM models, call peaks, identify peak summits, post-process peaks (adjust peak boundaries and filter out potentially false positive peaks) and export peak lists for downstream analysis.
 
 Stable versions of mosaics package is maintained through Bioconductor. To install or update the stable version of mosaics package, please run:
 
