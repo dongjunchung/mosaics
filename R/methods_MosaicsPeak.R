@@ -165,9 +165,9 @@ setMethod(
               return(0)
             }
           } )
+        } else {
+          stop( "No read-level data provided. Please run extractReads() first!" )
         }
-      } else {
-        stop( "No read-level data provided. Please run extractReads() first!" )
       }
       
       if ( nrow(object@peakList) > 0 ) {        

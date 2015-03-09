@@ -81,7 +81,7 @@
 
   peakgrExt <- GRanges( 
     seqnames = Rle(peakList[,1]), 
-    ranges = IRanges( start=peakList[,2] - fragLen/2, end=peakList[,3] + fragLen/2, names=nameVecAll ),
+    ranges = IRanges( start=peakList[,2] - fragLen, end=peakList[,3] + fragLen, names=nameVecAll ),
     strand = Rle(strand(rep("*",nrow(peakList))))
   )
   peakgrExt <- trim(peakgrExt)
@@ -210,7 +210,10 @@
   if ( parallel == TRUE ) {        
     fragSetOrg <- mclapply( chrCommon, function(chr) {
       suppressWarnings( greads[[chr]] <- trim(greads[[chr]]) )
-      suppressWarnings( midp <- resize( shift( greads[[chr]], width(greads[[chr]])/2 ), 1 ) )
+      #suppressWarnings( midp <- resize( shift( greads[[chr]], width(greads[[chr]])/2 ), 1 ) )
+      midp <- shift( greads[[chr]], width(greads[[chr]])/2 )
+      strand(midp) <- "*"
+      midp <- resize( midp, 1 )
       overlaps <- findOverlaps( peakgr[[chr]], midp )
       suppressWarnings( fragSetEach <- split( 
         greads[[chr]][subjectHits(overlaps)], queryHits(overlaps) ) )
@@ -222,7 +225,10 @@
   } else {        
     fragSetOrg <- lapply( chrCommon, function(chr) {
       suppressWarnings( greads[[chr]] <- trim(greads[[chr]]) )
-      suppressWarnings( midp <- resize( shift( greads[[chr]], width(greads[[chr]])/2 ), 1 ) )
+      #suppressWarnings( midp <- resize( shift( greads[[chr]], width(greads[[chr]])/2 ), 1 ) )
+      midp <- shift( greads[[chr]], width(greads[[chr]])/2 )
+      strand(midp) <- "*"
+      midp <- resize( midp, 1 )
       overlaps <- findOverlaps( peakgr[[chr]], midp )
       suppressWarnings( fragSetEach <- split( 
         greads[[chr]][subjectHits(overlaps)], queryHits(overlaps) ) )

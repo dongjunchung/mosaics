@@ -68,12 +68,12 @@
       profileCoordInput <- match( profileChip[,1], profileInput[,1] )
       profileInput <- cbind( profileChip[,1], profileInput[ profileCoordInput, 2 ] )
       profileInput[ is.na(profileInput[,2]), 2 ] <- 0
-      chipInputFC <- 100 * ( profileChip[,2] - profileInput[,2] * normC ) / profileChip[,1]
+      chipInputFC <- 100 * ( profileChip[,2] - profileInput[,2] * normC ) / profileChip[,2]
       
       profileCoordInputRegion <- match( profileChipRegion[,1], profileInput[,1] )
       profileInputRegion <- cbind( profileChipRegion[,1], profileInput[ profileCoordInputRegion, 2 ] )
       profileInputRegion[ is.na(profileInputRegion[,2]), 2 ] <- 0
-      chipInputFCRegion <- 100 * ( profileChipRegion[,2] - profileInputRegion[,2] * normC ) / profileChipRegion[,1]
+      chipInputFCRegion <- 100 * ( profileChipRegion[,2] - profileInputRegion[,2] * normC ) / profileChipRegion[,2]
       
     } else {
       
@@ -210,7 +210,7 @@
       locEndNew <- nrow(profileChip)
     }
     
-    profileChipRegion <- profileChip[ locStartNew:locEndNew, ]    
+    profileChipRegion <- profileChip[ locStartNew:locEndNew, , drop=FALSE ]    
     locSummitRegion <- which( profileChipRegion[,2] == max( profileChipRegion[,2] ) )
     if ( length(locSummitRegion) > 1 ) {
       locSummitRegion <- round(mean(locSummitRegion))

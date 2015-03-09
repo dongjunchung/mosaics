@@ -221,11 +221,12 @@ in `\texttt{infile}' and `\texttt{fileFormat}' arguments, respectively.
 The `\texttt{PET}' argument indicates whether the file is paired-end tag (`\texttt{PET=TRUE}') or single-end tag (`\texttt{PET=FALSE}') ChIP-Seq data.
 Allowed aligned read file formats depend on the `\texttt{PET}' argument.
 `\texttt{constructBins}' method currently allows the following aligned read file formats for SET ChIP-Seq data:
+BAM (`\texttt{"bam"}'), SAM (`\texttt{"sam"}'), BED (`\texttt{"bed"}'), 
 Eland result (`\texttt{"eland}$\_$\texttt{result"}'), Eland extended (`\texttt{"eland}$\_$\texttt{extended"}'),
-Eland export (`\texttt{"eland}$\_$\texttt{export"}'), default Bowtie (`\texttt{"bowtie"}'), SAM (`\texttt{"sam"}'), BED (`\texttt{"bed"}'), and CSEM BED (`\texttt{"csem"}').
+Eland export (`\texttt{"eland}$\_$\texttt{export"}'), default Bowtie (`\texttt{"bowtie"}'), and CSEM BED (`\texttt{"csem"}').
 %This method assumes that these aligned read files are obtained from single-end tag (SET) experiments.
 For PET ChIP-Seq data, `\texttt{constructBins}' method currently accepts the
-Eland result (`\texttt{"eland}$\_$\texttt{result"}') and SAM (`\texttt{"sam"}') file formats.
+BAM (`\texttt{"bam"}'), SAM (`\texttt{"sam"}'), and Eland result (`\texttt{"eland}$\_$\texttt{result"}') file formats.
 If input file format is neither BED nor CSEM BED,
 it retains only reads mapping uniquely to the reference genome (uni-reads). 
 See Appendices \ref{example_aligned_SET} and \ref{example_aligned_PET} for example lines of each aligned read file format.
@@ -491,22 +492,202 @@ print(examplePeak)[1:15,]
 @
 
 You can export peak calling results to text files in diverse file formats.
-Currently, `\texttt{mosaics}' package supports TXT, BED, and GFF file formats.
+Currently, `\texttt{mosaics}' package supports TXT, BED, GFF, narrowPeak, and broadPeak file formats.
 In the exported file, TXT file format (`\texttt{type="txt"}') includes all the
 columns that `\texttt{print}' method returns. `\texttt{type="bed"}' and
 `\texttt{type="gff"}' export peak calling results in standard BED and GFF file
-formats, respectively, where score is the averaged ChIP tag counts in each
-peak. Peak calling results can be exported in TXT, BED, and GFF file formats,
+formats, respectively, where score is the averaged ChIP tag counts in each peak. 
+
+narrowPeak and broadPeak are modified BED file formats
+and these file formats are used by the ENCODE (Encyclopedia of DNA Elements)
+Consortium and more information about these file formats can be found in
+\url{http://genome.ucsc.edu/FAQ/FAQformat.html}.
+In these file formats, 
+Note that narrowPeak format is supported only after `\texttt{extractReads}' and `\texttt{findSummit}'
+methods are applied to `\texttt{MosaicsPeak}' object because it requires peak summit information.
+See Section \ref{findSummit} for more information.
+
+Peak calling results can be exported in TXT, BED, GFF, narrowPeak, and broadPeak file formats, 
 respectively, by the commands:
 
 <<io-mosaicspeak-export>>=
-export( examplePeak, type="txt", filename="TSpeakList.txt" )
-export( examplePeak, type="bed", filename="TSpeakList.bed" )
-export( examplePeak, type="gff", filename="TSpeakList.gff" )
+export( examplePeak, type="txt", filename="IOpeakList.txt" )
+export( examplePeak, type="bed", filename="IOpeakList.bed" )
+export( examplePeak, type="gff", filename="IOpeakList.gff" )
+export( examplePeak, type="narrowPeak", filename="IOpeakList.narrowPeak" )
+export( examplePeak, type="broadPeak", filename="IOpeakList.broadPeak" )
 @
 
 `\texttt{fileLoc}' and `\texttt{fileName}' indicate the directory and the name
 of the exported file.
+
+\section{Identification of Peak Summits}\label{findSummit}
+
+In the case of punctuated peaks, such as regions bound by transcription factors,
+a peak summit (i.e., genomic position with the highest ChIP profile) is considered
+as potentially exact location of protein-DNA interaction.
+`\texttt{mosaics}' package provides functionality to identify a peak summit
+for each peak region identified using `\texttt{mosaicsPeak}' method.
+
+As `\texttt{mosaics}' package uses only information from bin-level data until this step,
+users first need to load read-level data to identify peak summits.
+Read-level data can be loaded and incorporated into `\texttt{MosaicsPeak}' object, 
+by applying `\texttt{extractReads}' method to `\texttt{MosaicsPeak}' object:
+
+<<summit-extractreads,eval=FALSE>>=
+examplePeak <- extractReads( examplePeak,
+  chipFile="/scratch/eland/STAT1_ChIP_eland_results.txt", chipFileFormat="eland_result",
+  chipPET=FALSE, chipFragLen=200,
+  controlFile="/scratch/eland/STAT1_control_eland_results.txt", controlFileFormat="eland_result", 
+  controlPET=FALSE, controlFragLen=200, parallel=TRUE, nCore=8 )
+examplePeak
+@
+
+<<load-extractreads,echo=FALSE>>=
+load( "" )
+examplePeak
+@
+
+The `\texttt{extractReads}' function supports the same set of aligned read file formats as in the `\texttt{constructBins}' function.
+
+Users can now identify peak summits by applying `\texttt{findSummit}' method to `\texttt{MosaicsPeak}' object:
+
+<<summit-findsummit,eval=TRUE>>=
+examplePeak <- findSummit( examplePeak, parallel=TRUE, nCore=8 )
+@
+
+Locations of peak summits are now incorporated as the column in the peak list:
+
+<<summit-findsummit-print>>=
+print(examplePeak)[1:15,]
+@
+
+\section{Visualization of ChIP Profile of Peak Regions}\label{peakplot}
+
+Visualization of ChIP profile is a critical step in the ChIP-seq data analysis.
+While `\texttt{mosaics}' package provides functionality to generate wiggle files
+for the use with genome browsers (See Section \ref{generateWig} for more details),
+users can also generate ChIP profile plots of peak regions directly from `\texttt{mosaics}' package
+for quick inspection of peak calling results.
+
+In order to generate ChIP profile plots of peak regions, 
+users first need to load read-level data using `\texttt{extractReads}' method,
+as illustrated in Section \ref{findSummit}.
+If `\texttt{extractReads}' method is already applied to `\texttt{MosaicsPeak}' object,
+users can generate ChIP profile plots of peak regions as a PDF file named `\texttt{peakplot.pdf}' by the command:
+
+<<summit-findsummit-plot>>=
+plot( examplePeak, filename="peakplot.pdf" )
+@
+
+If users are interested only in some specific peak regions,
+users can specify peak regions to generate ChIP profile plots with the argument `\texttt{peakNum}':
+
+<<summit-findsummit-plot-peaknum>>=
+plot( examplePeak, peakNum=1 )
+@
+
+The input to argument `\texttt{peakNum}' is a vector,
+where elements indicate the row indexes in the peak list.
+
+\section{Identification of Broad Peaks using MOSAiCS-HMM}\label{analysis_mosaicshmm}
+
+In `\texttt{mosaics}' package, broad peaks can be identified with MOSAiCS-HMM model, using methods `\texttt{mosaicsFitHMM}' and `\texttt{mosaicsPeakHMM}'. Although we have punctuated peaks for STAT1, we still use it for the illustrative purpose. For computational efficiency, `\texttt{mosaicsFitHMM}' utilizes MOSAiCS model fit as estimates of emission distribution of MOSAiCS-HMM model. In addition, it also considers MOSAiCS peak calling results at specified FDR level (`\texttt{init.FDR}') as initial values by default. By taking the MOSAiCS model fit from `\texttt{mosaicsFit}' as an input, users can fit MOSAiCS-HMM with the command:
+
+<<mosaicsFitHMM,eval=TRUE>>=
+exampleFitHMM <- mosaicsFitHMM( exampleFit, signalModel = "2S", 
+	init="mosaics", init.FDR = 0.05, parallel=FALSE, nCore=8 )
+@
+
+The following command prints out BIC values of MOSAiCS and MOSAiCS-HMM models
+so that users can determine whether it is beneficial to consider broad peaks using MOSAiCS-HMM. As before, a lower BIC value indicates a better model fit.
+
+<<mosaicshmmfit-show>>=
+exampleFitHMM
+@
+
+`\texttt{plot}' method also provides the GOF plot, which allows visual
+comparisons of the fits of the background, MOSAiCS, and MOSAiCS-HMM models with the actual data. Figure \ref{fig:mosaicshmmfit-plot} displays the GOF plot for our dataset. 
+
+<<mosaicshmmfit-plot,eval=FALSE>>=
+plot(exampleFitHMM)
+@
+
+\begin{figure}[tb]
+\begin{center}
+<<fig-mosaicshmmfit-plot,fig=TRUE,height=5,width=5,echo=FALSE>>=
+plot(exampleFitHMM)
+@
+\caption{\label{fig:mosaicshmmfit-plot} Goodness of Fit (GOF) plot. Depicted are
+actual data for ChIP and control samples with simulated data from the following
+fitted models: (Sim:Null): Background model; (Sim:MOSAiCS): MOSAiCS
+model; (Sim:MOSAiCS-HMM): MOSAiCS-HMM model. }
+\end{center}
+\end{figure}
+
+`\texttt{mosaicsPeakHMM}' calls peaks based on the MOSAiCS-HMM model fit. `\texttt{mosaicsPeakHMM}' allows two approaches, Viterbi algorithm (`\texttt{decoding="viterbi"}') and posterior decoding (`\texttt{decoding="posterior"}'), to call peaks. When posterior decoding is used, users can specify FDR level for the posterior decoding in the argument `\texttt{FDR}'. `\texttt{mosaicsPeakHMM}' provides its output as `\texttt{MosaicsPeak}' class object, which `\texttt{mosaicsPeak}' also generates. Hence, all the methods used for the output of `\texttt{mosaicsPeak}' can also be used for the output of `\texttt{mosaicsPeakHMM}', e.g., `\texttt{export}', `\texttt{print}', and `\texttt{show}'. Users can call peaks based on the MOSAiCS-HMM model fit with the command:
+
+<<mosaicsPeakHMM,eval=TRUE>>=
+examplePeakHMM1 <- mosaicsPeakHMM( exampleFitHMM, decoding="viterbi",
+  parallel=FALSE, nCore=8 )
+examplePeakHMM2 <- mosaicsPeakHMM( exampleFitHMM, FDR = 0.05, decoding="posterior",
+  parallel=FALSE, nCore=8 )
+@
+
+Note that `\texttt{mosaicsFit}' fits MOSAiCS-HMM model and `\texttt{mosaicsPeakHMM}' calls peaks for each chromosome separately. Hence, whenever multiple cores are available, it is strongly recommended to utilize parallel processing by setting `\texttt{parallel=TRUE}' and specifying the number of available cores in the argument `\texttt{nCore}'.
+
+\section{Adjust Peak Boundaries and Filter Out Potentially False Positive Peaks}\label{postprocess}
+
+Note that we developed and tested these post-processing steps mainly for broad peaks from histone modifications.
+While these functions can also be applied to punctuated peaks for transcription factors without any restrictions,
+the parameters for these functions might not be optimal for punctuated peaks.
+
+<<postprocess-adjustboundary>>=
+examplePeakHMM2 <- adjustBoundary( examplePeakHMM2, parallel=TRUE, nCore=8 )
+peakHMM
+head(print(peakHMM))
+@
+
+<<postprocess-filterpeak>>=
+examplePeakHMM2 <- filterPeak( examplePeakHMM2, parallel=TRUE, nCore=8 )
+peakHMM
+head(print(peakHMM))
+@
+         
+\section{Generating Wiggle Files to View on Genome Browsers}\label{generateWig}
+
+R package `\texttt{mosaics}' can generate wiggle files (\url{http://genome.ucsc.edu/goldenPath/help/wiggle.html}) for visualization purposes.
+These wiggle files can be used as input for many genome browsers such as the UCSC genome browser (\url{http://genome.ucsc.edu/}). 
+These wiggle files can easily be generated from the aligned read files with the command: 
+
+<<generateWig,eval=FALSE>>=
+generateWig( infile="/scratch/eland/STAT1_eland_results.txt", 
+    fileFormat="eland_result", outfileLoc="/scratch/eland/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr="chrM", 
+    PET=FALSE, fragLen=200, span=200, capping=0, normConst=1 )
+@
+
+The `\texttt{generateWig}' function has similar arguments as the `\texttt{constructBins}' function,
+except that it has `\texttt{span}' and `\texttt{normConst}' arguments 
+instead of the `\texttt{binSize}' argument of the `\texttt{constructBins}' function.
+The `\texttt{generateWig}' function supports the same set of aligned read file formats as in the `\texttt{constructBins}' function.
+The `\texttt{span}' argument indicates span used in wiggle files.
+The `\texttt{normConst}' argument means the normalizing constant to scale the values in wiggle files
+and it is especially useful when wiggle files for multiple related samples are generated and compared.
+In the resulting wiggle files, values are scaled by the value specified in the `\texttt{normConst}' argument.
+
+`\texttt{generateWig}' can generate a single wiggle file containing all chromosomes or multiple wiggle files for each chromosome.
+If `\texttt{byChr=FALSE}', all chromosomes are exported to one file
+named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{span[span].wig}' (for SET data)
+or `\texttt{[infileName]}$\_$\texttt{span[span].wig}' (for PET data),
+where \texttt{[infileName]}, \texttt{[fragLen]}, and \texttt{[span]} are
+name of aligned read file, average fragment length, and span, respectively.
+If `\texttt{byChr=TRUE}', each chromosome is exported to a separate file named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{span[span]}$\_$\texttt{[chrID].wig}' (for SET data) or
+`\texttt{[infileName]}$\_$\texttt{span[span]}$\_$\texttt{[chrID].wig}' (for PET data),
+where \texttt{[chrID]} is chromosome ID that reads align to.
+%These chromosome IDs (\texttt{[chrID]}) are extracted from the aligned read file.
+The constructed wiggle files are exported to the directory 
+specified in `\texttt{outfileLoc}' argument.
 
 \section{Two-Sample Analysis with Mappability and GC Content}\label{two_sample_MGC}
 
@@ -661,87 +842,6 @@ of the two-sample analysis.
 examplePeak <- mosaicsPeak( exampleFit, signalModel="2S", FDR=0.05,
 maxgap=200, minsize=50, thres=10 )
 @
-
-\section{Identification of Broad Peaks using MOSAiCS-HMM}\label{analysis_mosaicshmm}
-
-In `\texttt{mosaics}' package, broad peaks can be identified with MOSAiCS-HMM model, using methods `\texttt{mosaicsFitHMM}' and `\texttt{mosaicsPeakHMM}'. Although we have punctuated peaks for STAT1, we still use it for the illustrative purpose. For computational efficiency, `\texttt{mosaicsFitHMM}' utilizes MOSAiCS model fit as estimates of emission distribution of MOSAiCS-HMM model. In addition, it also considers MOSAiCS peak calling results at specified FDR level (`\texttt{init.FDR}') as initial values by default. By taking the MOSAiCS model fit from `\texttt{mosaicsFit}' as an input, users can fit MOSAiCS-HMM with the command:
-
-<<mosaicsFitHMM,eval=TRUE>>=
-exampleFitHMM <- mosaicsFitHMM( exampleFit, signalModel = "2S", 
-	init="mosaics", init.FDR = 0.05, parallel=FALSE, nCore=8 )
-@
-
-The following command prints out BIC values of MOSAiCS and MOSAiCS-HMM models
-so that users can determine whether it is beneficial to consider broad peaks using MOSAiCS-HMM. As before, a lower BIC value indicates a better model fit.
-
-<<mosaicshmmfit-show>>=
-exampleFitHMM
-@
-
-`\texttt{plot}' method also provides the GOF plot, which allows visual
-comparisons of the fits of the background, MOSAiCS, and MOSAiCS-HMM models with the actual data. Figure \ref{fig:mosaicshmmfit-plot} displays the GOF plot for our dataset. 
-
-<<mosaicshmmfit-plot,eval=FALSE>>=
-plot(exampleFitHMM)
-@
-
-\begin{figure}[tb]
-\begin{center}
-<<fig-mosaicshmmfit-plot,fig=TRUE,height=5,width=5,echo=FALSE>>=
-plot(exampleFitHMM)
-@
-\caption{\label{fig:mosaicshmmfit-plot} Goodness of Fit (GOF) plot. Depicted are
-actual data for ChIP and control samples with simulated data from the following
-fitted models: (Sim:Null): Background model; (Sim:MOSAiCS): MOSAiCS
-model; (Sim:MOSAiCS-HMM): MOSAiCS-HMM model. }
-\end{center}
-\end{figure}
-
-`\texttt{mosaicsPeakHMM}' calls peaks based on the MOSAiCS-HMM model fit. `\texttt{mosaicsPeakHMM}' allows two approaches, Viterbi algorithm (`\texttt{decoding="viterbi"}') and posterior decoding (`\texttt{decoding="posterior"}'), to call peaks. When posterior decoding is used, users can specify FDR level for the posterior decoding in the argument `\texttt{FDR}'. `\texttt{mosaicsPeakHMM}' provides its output as `\texttt{MosaicsPeak}' class object, which `\texttt{mosaicsPeak}' also generates. Hence, all the methods used for the output of `\texttt{mosaicsPeak}' can also be used for the output of `\texttt{mosaicsPeakHMM}', e.g., `\texttt{export}', `\texttt{print}', and `\texttt{show}'. Users can call peaks based on the MOSAiCS-HMM model fit with the command:
-
-<<mosaicsPeakHMM,eval=TRUE>>=
-examplePeakHMM1 <- mosaicsPeakHMM( exampleFitHMM, decoding="viterbi",
-  parallel=FALSE, nCore=8 )
-examplePeakHMM2 <- mosaicsPeakHMM( exampleFitHMM, FDR = 0.05, decoding="posterior",
-  parallel=FALSE, nCore=8 )
-@
-
-Note that `\texttt{mosaicsFit}' fits MOSAiCS-HMM model and `\texttt{mosaicsPeakHMM}' calls peaks for each chromosome separately. Hence, whenever multiple cores are available, it is strongly recommended to utilize parallel processing by setting `\texttt{parallel=TRUE}' and specifying the number of available cores in the argument `\texttt{nCore}'.
-         
-\section{Generating Wiggle Files to View on Genome Browsers}\label{generateWig}
-
-R package `\texttt{mosaics}' can generate wiggle files (\url{http://genome.ucsc.edu/goldenPath/help/wiggle.html}) for visualization purposes.
-These wiggle files can be used as input for many genome browsers such as the UCSC genome browser (\url{http://genome.ucsc.edu/}). 
-These wiggle files can easily be generated from the aligned read files with the command: 
-
-<<generateWig,eval=FALSE>>=
-generateWig( infile="/scratch/eland/STAT1_eland_results.txt", 
-    fileFormat="eland_result", outfileLoc="/scratch/eland/", 
-    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr="chrM", 
-    PET=FALSE, fragLen=200, span=200, capping=0, normConst=1 )
-@
-
-The `\texttt{generateWig}' function has similar arguments as the `\texttt{constructBins}' function,
-except that it has `\texttt{span}' and `\texttt{normConst}' arguments 
-instead of the `\texttt{binSize}' argument of the `\texttt{constructBins}' function.
-The `\texttt{generateWig}' function supports the same set of aligned read file formats as in the `\texttt{constructBins}' function.
-The `\texttt{span}' argument indicates span used in wiggle files.
-The `\texttt{normConst}' argument means the normalizing constant to scale the values in wiggle files
-and it is especially useful when wiggle files for multiple related samples are generated and compared.
-In the resulting wiggle files, values are scaled by the value specified in the `\texttt{normConst}' argument.
-
-`\texttt{generateWig}' can generate a single wiggle file containing all chromosomes or multiple wiggle files for each chromosome.
-If `\texttt{byChr=FALSE}', all chromosomes are exported to one file
-named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{span[span].wig}' (for SET data)
-or `\texttt{[infileName]}$\_$\texttt{span[span].wig}' (for PET data),
-where \texttt{[infileName]}, \texttt{[fragLen]}, and \texttt{[span]} are
-name of aligned read file, average fragment length, and span, respectively.
-If `\texttt{byChr=TRUE}', each chromosome is exported to a separate file named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{span[span]}$\_$\texttt{[chrID].wig}' (for SET data) or
-`\texttt{[infileName]}$\_$\texttt{span[span]}$\_$\texttt{[chrID].wig}' (for PET data),
-where \texttt{[chrID]} is chromosome ID that reads align to.
-%These chromosome IDs (\texttt{[chrID]}) are extracted from the aligned read file.
-The constructed wiggle files are exported to the directory 
-specified in `\texttt{outfileLoc}' argument.
 
 %\section{Tuning Parameters to Improve the MOSAiCS Fit}\label{tuning}
 \section{Case Studies: Tuning Parameters to Improve the MOSAiCS Fit}\label{case_studies}

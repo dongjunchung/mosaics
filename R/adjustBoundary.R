@@ -83,6 +83,7 @@ setMethod(
       cat( "# peaks with trimmed boundaries: ", length(which( peakList[,2] > object@peakList[,2] | peakList[,3] < object@peakList[,3] )), "\n" )
       cat( "# peaks with extended boundaries: ", length(which( peakList[,2] < object@peakList[,2] | peakList[,3] > object@peakList[,3] )), "\n" )
       cat( "# peaks of which summits changed: ", length(which( peakList[,ncol(peakList)] != object@peakList[,ncol(object@peakList)] )), "\n" )
+      cat( "normC: ", normC, "\n" )
       cat( "------------------------------------------------------------\n" )
     
       object@peakList <- peakList

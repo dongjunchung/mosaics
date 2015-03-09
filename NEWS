@@ -1,4 +1,26 @@
 
+Changes in version 2.9.2:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The vignette and the help documents are updated and polished.
+
+BUG FIXES
+
+    o export(): fix the error to incorrectly ask to run exportReads() when it is not needed.
+	
+	
+Changes in version 2.9.1:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The vignette and the help documents are updated and polished.
+
+BUG FIXES
+
+    o adjustBoundary(): fix the error that boundaries are incorrectly adjusted.
+
+	
 Changes in version 2.9.0:
 
 SIGNIFICANT USER-VISIBLE CHANGES
