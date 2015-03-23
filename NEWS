@@ -1,5 +1,5 @@
 
-Changes in version 2.9.2:
+Changes in version 2.9.3:
 
 SIGNIFICANT USER-VISIBLE CHANGES
 
@@ -7,7 +7,18 @@ SIGNIFICANT USER-VISIBLE CHANGES
 
 BUG FIXES
 
-    o export(): fix the error to incorrectly ask to run exportReads() when it is not needed.
+    o generateWig(): fix the error that values in the exported files are written in scientific notation.
+	
+	o constructBins(): fix the error that values in the exported files are written in scientific notation.
+	
+	
+Changes in version 2.9.2:
+
+BUG FIXES
+
+    o extractReads(): fix the error that strands are incorrectly handle when loading read-level data.
+	
+	o export(): fix the error to incorrectly ask to run exportReads() when it is not needed.
 	
 	
 Changes in version 2.9.1:

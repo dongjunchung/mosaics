@@ -115,16 +115,27 @@ Kuan, PF, D Chung, JA Thomson, R Stewart, and S Keles (2011),
 
 Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
-\author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles }
+\author{ Dongjun Chung, Pei Fen Kuan, Rene Welch, Sunduz Keles }
 \seealso{
 \code{\link{readBins}}, \code{\linkS4class{BinData}}.
 }
 \examples{
 \dontrun{
-constructBins( infile="/scratch/eland/STAT1_eland_results.txt", 
-    fileFormat="eland_result", outfileLoc="/scratch/eland/", 
-    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr="chrM", 
-    PET = FALSE, fragLen=200, binSize=200, capping=0 )
+library(mosaicsExample)
+
+constructBins( infile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+constructBins( infile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+
+binHM <- readBins( type=c("chip","input"),
+    fileName=c( "~/wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt",
+    "~/wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt" ) )
+binHM
 }
 }
 \keyword{models}

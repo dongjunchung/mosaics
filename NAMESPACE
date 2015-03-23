@@ -10,8 +10,14 @@ export( constructBins, readBins, mosaicsFit, mosaicsPeak, mosaicsRunAll, generat
 
 export( mosaicsFitHMM, mosaicsPeakHMM )
 
+export( extractReads, findSummit, adjustBoundary, filterPeak )
+
 export( show, print, plot )
 
 export( estimates )
 
 export( export )
+
+export( bdBin, empFDR, coverage, read, seqDepth )
+
+export( chrID, coord, tagCount, input, mappability, gcContent )

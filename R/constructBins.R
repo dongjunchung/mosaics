@@ -189,6 +189,11 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
           
           cat( file=outfile )
         }
+      
+        # no scientific notation
+      
+        scipenOrg <- options()$scipen
+        options( scipen=999 )
         
         # write bin-level data file
      
@@ -200,6 +205,10 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
         write.table( data.frame( chr, start(bindata), counts ),
           file=outfile, sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE,
           append=TRUE )
+    
+        # recover original setting for scientific notation
+      
+        options( scipen=scipenOrg )
         
         rm( bindata, greads, counts )
         gc()

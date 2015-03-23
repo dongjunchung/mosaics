@@ -25,6 +25,12 @@ Objects can be created by calls of the form \code{new("MosaicsFit", ...)}.
         a vector of genomic coordinates. }
     \item{\code{tagCount}:}{Object of class \code{"numeric"},
         a vector of tag counts of ChIP sample. }
+    \item{\code{mappability}:}{Object of class \code{"numeric"},
+        a vector of mappability score. }
+    \item{\code{gcContent}:}{Object of class \code{"numeric"},
+        a vector of GC content score. }
+    \item{\code{input}:}{Object of class \code{"numeric"},
+        a vector of tag counts of matched control sample. }
     \item{\code{bic1S}:}{Object of class \code{"numeric"},
         Bayesian Information Criterion (BIC) value of one-signal-component model. }
     \item{\code{bic2S}:}{Object of class \code{"numeric"},
@@ -46,18 +52,23 @@ Objects can be created by calls of the form \code{new("MosaicsFit", ...)}.
      }
 }
 \references{
-Kuan, PF, D Chung, JA Thomson, R Stewart, and S Keles (2010), "A Statistical Framework
-for the Analysis of ChIP-Seq Data", To appear in \emph{Journal of the American Statistical Association} (\url{http://pubs.amstat.org/doi/abs/10.1198/jasa.2011.ap09706}).
+Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Keles (2011), 
+"A Statistical Framework for the Analysis of ChIP-Seq Data", 
+\emph{Journal of the American Statistical Association}, Vol. 106, pp. 891-903.
+
+Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
-\author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles }
+\author{ Dongjun Chung, Pei Fen Kuan, Rene Welch, Sunduz Keles }
 \seealso{
-\code{\link{mosaicsFit}}, \code{\link{mosaicsPeak}}, \code{\link{estimates}}.
+\code{\link{mosaicsFit}}, \code{\link{mosaicsPeak}}, \code{\link{mosaicsFitHMM}}, \code{\link{estimates}}.
 }
 \examples{
 showClass("MosaicsFit")
 \dontrun{
 library(mosaicsExample)
-data(exampleFit)
+
+data(exampleBinData)
+exampleFit <- mosaicsFit( exampleBinData, analysisType="IO" )
 
 exampleFit
 plot(exampleFit)

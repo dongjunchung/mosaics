@@ -104,19 +104,42 @@ Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Keles (2011),
 
 Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
-\author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles}
+\author{ Dongjun Chung, Pei Fen Kuan, Rene Welch, Sunduz Keles}
 \seealso{
-\code{\link{mosaicsFit}}, \code{\link{mosaicsFitHMM}}, 
-\code{\linkS4class{MosaicsFit}}, \code{\linkS4class{MosaicsHMM}}, \code{\linkS4class{MosaicsPeak}}.
+\code{\link{mosaicsPeak}}, \code{\link{mosaicsPeakHMM}}, \code{\link{export}}, 
+\code{\link{findSummit}}, \code{\link{adjustBoundary}}, \code{\link{filterPeak}}, 
+\code{\linkS4class{MosaicsPeak}}.
 }
 \examples{
 \dontrun{
 library(mosaicsExample)
-data(exampleFit)
 
-exampleFitHMM <- mosaicsFitHMM( exampleFit, signalModel = "2S", init.FDR = 0.05 )
-examplePeakHMM1 <- mosaicsPeakHMM( exampleFitHMM, decoding="viterbi" )
-examplePeakHMM2 <- mosaicsPeakHMM( exampleFitHMM, FDR = 0.05, decoding="posterior" )
+constructBins( infile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+constructBins( infile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+
+binHM <- readBins( type=c("chip","input"),
+    fileName=c( "~/wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt",
+    "~/wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt" ) )
+fitHM <- mosaicsFit( binHM, analysisType="IO", bgEst="rMOM" )
+hmmHM <- mosaicsFitHMM( fitHM, signalModel = "2S", 
+  init="mosaics", init.FDR = 0.05, parallel=TRUE, nCore=8 )
+peakHM <- mosaicsPeakHMM( hmmHM, FDR = 0.05, decoding="posterior",
+  thres=10, parallel=TRUE, nCore=8 )
+
+peakHM <- extractReads( peakHM,
+  chipFile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"),
+  chipFileFormat="bam", chipPET=FALSE, chipFragLen=200,
+  controlFile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+  controlFileFormat="bam", controlPET=FALSE, controlFragLen=200, parallel=TRUE, nCore=8 )
+peakHM <- findSummit( peakHM, parallel=TRUE, nCore=8 )
+peakHM <- adjustBoundary( peakHM, parallel=TRUE, nCore=8 )
+peakHM <- filterPeak( peakHM, parallel=TRUE, nCore=8 )
 }
 }
 \keyword{models}

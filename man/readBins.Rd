@@ -73,17 +73,27 @@ Construct \code{BinData} class object.
 Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Keles (2011), 
 "A Statistical Framework for the Analysis of ChIP-Seq Data", 
 \emph{Journal of the American Statistical Association}, Vol. 106, pp. 891-903.
+
+Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
-\author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles }
+\author{ Dongjun Chung, Pei Fen Kuan, Rene Welch, Sunduz Keles }
 \seealso{
 \code{\link{constructBins}}, \code{\link{mosaicsFit}}, \code{\linkS4class{BinData}}.
 }
 \examples{
 \dontrun{
 library(mosaicsExample)
-exampleBinData <- readBins( type=c("chip","input"),
-    fileName=c( system.file("extdata/chip_chr21.txt", package="mosaicsExample"),
-    system.file("extdata/input_chr21.txt", package="mosaicsExample") ) )
+
+constructBins( infile=system.file( file.path("extdata","wgEncodeSydhTfbsGm12878Stat1StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+constructBins( infile=system.file( file.path("extdata","wgEncodeSydhTfbsGm12878InputStdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+    
+binTFBS <- readBins( type=c("chip","input"),
+    fileName=c( "~/wgEncodeSydhTfbsGm12878Stat1StdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt",
+    "~/wgEncodeSydhTfbsGm12878InputStdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt" ) )
 }
 }
 \keyword{models}

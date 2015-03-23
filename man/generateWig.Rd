@@ -117,13 +117,14 @@ Kuan, PF, D Chung, JA Thomson, R Stewart, and S Keles (2011),
 
 Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
-\author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles }
+\author{ Dongjun Chung, Pei Fen Kuan, Rene Welch, Sunduz Keles }
 \examples{
 \dontrun{
-generateWig( infile="/scratch/eland/STAT1_eland_results.txt", 
-    fileFormat="eland_result", outfileLoc="/scratch/eland/", 
-    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr="chrM", 
-    PET = FALSE, fragLen=200, span=200, capping=0, normConst=1 )
+library(mosaicsExample)
+
+generateWig( infile=system.file( file.path("extdata","wgEncodeSydhTfbsGm12878Stat1StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    PET=FALSE, fragLen=200, span=200, capping=0, normConst=1 )
 }
 }
 \keyword{models}

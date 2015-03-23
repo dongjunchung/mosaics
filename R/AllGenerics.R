@@ -82,10 +82,10 @@ setGeneric( "filterPeak",
     standardGeneric("filterPeak")
 )
 
-setGeneric( "peakList",
-    function( object, ... )
-    standardGeneric("peakList")
-)
+#setGeneric( "peakList",
+#    function( object, ... )
+#    standardGeneric("peakList")
+#)
 
 setGeneric( "export",
     function( object, ... )

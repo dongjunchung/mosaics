@@ -18,18 +18,21 @@
 \usepackage[pdftex,
 bookmarks, 
 bookmarksopen,
-pdfauthor={Dongjun Chung, Pei Fen Kuan and Sunduz Keles},
+pdfauthor={Dongjun Chung, Pei Fen Kuan, Rene Welch, and Sunduz Keles},
 pdftitle={mosaics Vignette}]
 {hyperref}
 
-\title{Analysis of ChIP-seq Data with `\texttt{mosaics}' Package}
-\author{Dongjun Chung$^1$, Pei Fen Kuan$^2$ and S\"und\"uz Kele\c{s}$^{1,3}$\\
-  $^1$Department of Statistics, University of Wisconsin\\ 
+\title{Analysis of ChIP-seq Data with `\texttt{mosaics}' Package:\\
+MOSAiCS and MOSAiCS-HMM}
+\author{Dongjun Chung$^1$, Pei Fen Kuan$^2$, Rene Welch$^3$, and S\"und\"uz Kele\c{s}$^{3,4}$\\
+  $^1$Department of Public Health Sciences, Medical University of South Carolina\\ 
+  Charleston, SC 29425.\\
+  $^2$Department of Applied Mathematics and Statistics, Stony Brook University\\
+  Stony Brook, NY 11794.\\
+  $^3$Department of Statistics, University of Wisconsin\\ 
   Madison, WI 53706.\\
-  $^2$Department of Biostatistics, University of North Carolina at Chapel Hill\\
-  Chapel Hill, NC 27599.\\
-  $^3$Department of Biostatistics and Medical Informatics, 
-  University of Wisconsin\\Madison, WI 53706.}
+  $^4$Department of Biostatistics and Medical Informatics, University of Wisconsin\\
+  Madison, WI 53706.}
 
 \date{\today}
 
@@ -52,7 +55,7 @@ in \cite{mosaics}. MOSAiCS stands for ``\textbf{MO}del-based one and
 two \textbf{S}ample \textbf{A}nalysis and \textbf{I}nference for
 \textbf{C}hIP-\textbf{S}eq Data''. It implements a flexible parametric mixture
 modeling approach for detecting peaks, i.e., enriched regions, in one-sample
-(ChIP sample) or two-sample (ChIP and control samples) ChIP-seq data.
+(ChIP sample) or two-sample (ChIP and matched control samples) ChIP-seq data.
 It can account for mappability and GC content biases that arise in ChIP-seq data.
 
 Recently, we extended the MOSAiCS framework with a hidden Markov Model (HMM) architecture,
@@ -71,10 +74,23 @@ options(prompt = "R> ")
 library("mosaics")
 @
 
+\noindent
+`\texttt{mosaicsExample}' package is a companion package for the `\texttt{mosaics}' package
+and it provides various example ChIP-seq datasets for MOSAiCS and MOAiCS-HMM, as illustrated in this vignette.
+
+<<mosaicsExample-prelim>>=
+library("mosaicsExample")
+@
+
+In this vignette, we focus on chromosome 22 data from ChIP-seq experiments of STAT1 binding
+and H3K4me3 modification in GM12878 cell line, downloaded from the ENCODE database
+(\url{http://genome.ucsc.edu/ENCODE/}).
+In Section \ref{two_sample_MGC}, we consider chromosome 21 data from a ChIP-seq
+experiment of STAT1 binding in interferon-$\gamma$-stimulated HeLa S3 cells \cite{stat1}. 
+
 \section{Getting started}
 
 `\texttt{mosaics}' package provides flexible framework for the ChIP-seq analysis.
-
 If you have the data for matched control sample, 
 two-sample analysis is recommended.
 If the ChIP-seq data is deeply sequenced, 
@@ -88,24 +104,560 @@ one-sample analysis of ChIP-seq data.
 In this case, you should have files for mappability and GC content, 
 in addition to the files for ChIP and matched control samples.
 
-We recommend users start from Section \ref{mosaicsRunAll} and
-it discusses the most convenient way to do the two-sample analysis
-(without using mappability and GC content).
-Section \ref{two_sample_no_MGC} discusses each step of the two-sample workflow in detail 
+Section \ref{two_sample_no_MGC} discusses each step of the two-sample workflow
 and provides command lines for each step.
+Section \ref{analysis_mosaicshmm} discusses steps of analyzing histone modification
+ChIP-seq experiments using MOSAiCS-HMM.
+Section \ref{postprocessing} discusses steps of post-processing peak call results,
+including identifying peak summits, adjusting peak boundaries, and filtering potentionally false positive peaks.
+Section \ref{mosaicsRunAll} discusses the most convenient way to do the two-sample analysis
+(without using mappability and GC content) by running a single function.
 Sections \ref{two_sample_MGC} and \ref{one_sample} briefly explain
 the workflow and command lines for the two-sample analysis and the one-sample analysis
 with mappability and GC content, respectively.
-Section \ref{analysis_mosaicshmm} discusses steps of analyzing histone modification
-ChIP-seq experiments using MOSAiCS-HMM.
 
 We encourage  questions or requests regarding 
 `\texttt{mosaics}' package to be posted on our Google group
 \url{http://groups.google.com/group/mosaics_user_group}.
 
+\section{Identification of Punctuated Peaks using MOSAiCS}\label{two_sample_no_MGC}
+
+\subsection{Constructing Bin-Level Files from the Aligned Read File}\label{constructBins}
+
+R package `\texttt{mosaics}' analyzes the data after converting aligned read files 
+into bin-level files for modeling and visualization purposes.
+Bin-level data for ChIP and control samples can easily be generated from the aligned read files with the command: 
+
+<<constructBins,eval=TRUE>>=
+constructBins( infile=system.file( file.path("extdata","wgEncodeSydhTfbsGm12878Stat1StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+constructBins( infile=system.file( file.path("extdata","wgEncodeSydhTfbsGm12878InputStdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+@
+
+You can specify the name and file format of the aligned read file 
+in `\texttt{infile}' and `\texttt{fileFormat}' arguments, respectively.
+The `\texttt{PET}' argument indicates whether the file is paired-end tag (`\texttt{PET=TRUE}') or single-end tag (`\texttt{PET=FALSE}') ChIP-Seq data.
+Allowed aligned read file formats depend on the `\texttt{PET}' argument.
+`\texttt{constructBins}' method currently allows the following aligned read file formats for SET ChIP-Seq data:
+BAM (`\texttt{"bam"}'), SAM (`\texttt{"sam"}'), BED (`\texttt{"bed"}'), 
+Eland result (`\texttt{"eland}$\_$\texttt{result"}'), Eland extended (`\texttt{"eland}$\_$\texttt{extended"}'),
+Eland export (`\texttt{"eland}$\_$\texttt{export"}'), default Bowtie (`\texttt{"bowtie"}'), and CSEM BED (`\texttt{"csem"}').
+%This method assumes that these aligned read files are obtained from single-end tag (SET) experiments.
+For PET ChIP-Seq data, `\texttt{constructBins}' method currently accepts the
+BAM (`\texttt{"bam"}'), SAM (`\texttt{"sam"}'), and Eland result (`\texttt{"eland}$\_$\texttt{result"}') file formats.
+If input file format is neither BED nor CSEM BED,
+it retains only reads mapping uniquely to the reference genome (uni-reads). 
+See Appendices \ref{example_aligned_SET} and \ref{example_aligned_PET} for example lines of each aligned read file format.
+
+Even though `\texttt{constructBins}' retains only uni-reads for most aligned read file formats,
+reads mapping to multiple locations on the reference genome (multi-reads)
+can be easily incorporated into bin-level files by utilizing our multi-read allocator, 
+\texttt{CSEM} (ChIP-Seq multi-read allocator using Expectation-Maximization algorithm).
+Galaxy tool for CSEM is also available in Galaxy Tool Shed (\url{http://toolshed.g2.bx.psu.edu/}; ``csem'' under ``Next Gen Mappers'') and stand-alone version of CSEM is also available at \url{http://deweylab.biostat.wisc.edu/csem/}.
+CSEM exports uni-reads and allocated multi-reads into standard BED file
+and the corresponding bin-level files can be constructed 
+by applying `\texttt{constructBins}' method to this BED file with the argument
+`\texttt{fileFormat="csem"}'.
+
+`\texttt{constructBins}' can generate a single bin-level file containing all chromosomes
+(for a genome-wide analysis) or multiple bin-level files for each chromosome
+(for a chromosome-wise analysis).
+If `\texttt{byChr=FALSE}', bin-level data for all chromosomes are exported to one file
+named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{bin[binSize].txt}' (for SET data)
+or `\texttt{[infileName]}$\_$\texttt{bin[binSize].txt}' (for PET data),
+where \texttt{[infileName]}, \texttt{[fragLen]}, and \texttt{[binSize]} are
+name of aligned read file, average fragment length, and bin size, respectively.
+If `\texttt{byChr=TRUE}', bin-level data for each chromosome is exported
+to a separate file named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{bin[binSize]}$\_$\texttt{[chrID].txt}' (for SET data) or `\texttt{[infileName]}$\_$\texttt{bin[binSize]}$\_$\texttt{[chrID].txt}' (for PET data),
+where \texttt{[chrID]} is chromosome ID that reads align to.
+These chromosome IDs (\texttt{[chrID]}) are extracted from the aligned read file.
+The constructed bin-level files are exported to the directory 
+specified in `\texttt{outfileLoc}' argument.
+
+The `\texttt{useChrfile}' argument indicates whether to use the file containing chromosome ID and chromosome size, which is specified in the `\texttt{chrfile}' argument.
+See Appendix \ref{example_chrfile} for the example lines of this chromosome information file.
+If you want to exclude some chromosomes in the processed bin-level files,
+you can specify these chromosomes in `\texttt{excludeChr}' argument.
+The `\texttt{excludeChr}' argument will be ignored if `\texttt{useChrfile=TRUE}'.
+
+You can specify average fragment length and bin size in `\texttt{fragLen}' and `\texttt{binSize}' arguments, respectively,
+and these arguments control the resolution of bin-level ChIP-seq data.
+By default, average fragment length is set to 200 bp, which is the common fragment length
+for Illumina sequences, and bin size equals to average fragment length.
+The `\texttt{fragLen}' argument is ignored for PET ChIP-seq data (`\texttt{PET = TRUE}').
+`\texttt{capping}' argument indicates maximum number of reads allowed to start at each nucleotide position.
+Using some small value for capping (e.g., `\texttt{capping=3}') will exclude extremely large read counts that might correspond to PCR amplification artifacts, which is especially useful for the ChIP-seq data with low sequencing depth. 
+Capping is not applied (default) if `\texttt{capping}' is set to some non-positive value, e.g., `\texttt{capping=0}'.
+
+\subsection{Reading Bin-Level Data into the R Environment}\label{readBins}
+
+You now have bin-level ChIP data and matched control sample data from '\texttt{constructBins}'.
+Bin-level data can be imported to the R environment with the command:
+
+<<io-readbin>>=
+binTFBS <- readBins( type=c("chip","input"),
+    fileName=c( "~/wgEncodeSydhTfbsGm12878Stat1StdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt",
+    "~/wgEncodeSydhTfbsGm12878InputStdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt" ) )
+@
+
+For the  `\texttt{type}' argument, 
+\texttt{"chip"} and \texttt{"input"} indicate bin-level ChIP data
+control sample data, respectively. You need to specify the corresponding file names 
+in `\texttt{fileName}'. `\texttt{mosaics}' package assumes that each file name 
+in `\texttt{fileName}' is provided in the same order as in `\texttt{type}'. 
+
+In \texttt{mosaics} package, you can do either genome-wide analysis or chromosome-wise analysis
+and this analysis type will be determined automatically 
+based on the contents of bin-level files imported using `\texttt{readBins}'.
+If the bin-level files contain more than one chromosome
+(i.e., bin-level files are obtained using `\texttt{byChr=FALSE}' in `\texttt{constructBins}'), 
+`\texttt{mosaicsFit}' will analyze all the chromosomes simultaneously (genome-wide analysis).
+Note that if these bin-level files contain different sets of chromosomes,
+then `\texttt{readBins}' method will utilize only the intersection of them.
+If bin-level files are obtained using `\texttt{byChr=FALSE}' in `\texttt{constructBins}',
+each bin-level file contains data for only one chromosome
+and each of these bin-level files need to be analyzed separately (chromosome-wise analysis).
+The genome-wide analysis usually provide more stable model fitting and peak identification results
+so it is recommended for most cases.
+
+R package \texttt{mosaics} provides functions for generating simple summaries
+of the data. The following command prints out basic information about the
+bin-level data, such as number of bins and total ``effective tag counts''.
+``Total effective tag counts'' is defined as the sum of the ChIP tag counts of all
+bins. This value is usually larger than the sequencing depth since tags are
+counted after extension to average fragment length and an extended fragment can
+contribute to multiple bins. 
+
+<<io-bindata-show>>=
+binTFBS
+@
+
+`\texttt{print}' method returns the bin-level data in data frame format.
+
+<<io-bindata-print>>=
+print(binTFBS)[ 90600:90614, ]
+@
+
+`\texttt{plot}' method provides exploratory plots for the ChIP data. Different
+type of plots can be obtained by varying the `\texttt{plotType}' argument.
+`\texttt{plotType="input"}' generates a plot of mean ChIP tag counts versus
+control tag counts. If `\texttt{plotType}' is not specified, this method plots the
+histogram of ChIP tag counts.
+
+<<io-bindata-plot,eval=FALSE>>=
+plot( binTFBS )
+plot( binTFBS, plotType="input" )
+@
+
+Figures \ref{fig:bindata-plot-hist} and \ref{fig:bindata-plot-input} display
+examples of different types of plots. The relationship
+between mean ChIP tag counts and control tag counts seems to be linear,
+especially for small  control tag counts (Figure \ref{fig:bindata-plot-input}).
+
+\begin{figure}[tb]
+\begin{center}
+<<fig-bindata-plot-hist,fig=TRUE,height=5,width=5,echo=FALSE>>=
+plot(binTFBS)
+@
+\caption{\label{fig:bindata-plot-hist} Histograms of the  count data 
+from ChIP and control samples.}
+\end{center}
+\end{figure}
+
+\begin{figure}[tb]
+\begin{center}
+<<fig-bindata-plot-input,fig=TRUE,height=5,width=5,echo=FALSE>>=
+plot( binTFBS, plotType="input" )
+@
+\caption{\label{fig:bindata-plot-input} Mean ChIP tag count versus
+Control tag count.}
+\end{center}
+\end{figure}
+
+\subsection{Fitting the MOSAiCS Model}\label{mosaicsFit}
+
+We are now ready to fit a MOSAiCS model using the bin-level data above
+(\texttt{binTFBS}) with the command:
+
+<<io-mosaicsfit>>=
+fitTFBS <- mosaicsFit( binTFBS, analysisType="IO", bgEst="rMOM" )
+@
+
+`\texttt{analysisType="IO"}' indicates implementation of the two-sample analysis.
+`\texttt{bgEst}' argument determines background estimation approach.
+`\texttt{bgEst="matchLow"}' estimates background distribution using only bins with low tag counts
+and it is appropriate for the data with relatively low sequencing depth. 
+`\texttt{bgEst="rMOM"}' estimates background distribution using robust method of moment (MOM) (default) and
+it is appropriate for the data with relatively high sequencing depth.
+If `\texttt{bgEst="automatic"}', `\texttt{mosaicsFit}' tries its best guess 
+for the background estimation approach, based on the data provided.
+If the goodness of fit obtained using `\texttt{bgEst="automatic"}' is not satisfactory,
+we recommend users to try `\texttt{bgEst="matchLow"}' and `\texttt{bgEst="rMOM"}' 
+and it might improve the model fit.
+
+`\texttt{mosaicsFit}' fits both one-signal-component and two-signal-component
+models. When identifying peaks, you can choose the number of signal components
+to be used for the final model. The optimal choice of the number of signal
+components depends on the characteristics of data. In order to support users
+in the choice of optimal signal model, \texttt{mosaics} package provides
+Bayesian Information Criterion (BIC) values and Goodness of Fit (GOF) plots
+of these signal models. 
+
+The following command prints out BIC values of one-signal-component and
+two-signal-component models, with additional information about the parameters
+used in fitting the background (non-enriched) distribution. A lower BIC value
+indicates a better model fit. In this dataset, BIC values are quite comparable
+between one- and two-signal-component models although BIC value is slightly smaller
+for one-signal-component model.
+
+<<io-mosaicsfit-show>>=
+fitTFBS
+@
+
+`\texttt{plot}' method provides the GOF plot.  This plots allows visual
+comparisons of the fits of the background, one-signal-component, and
+two-signal-component models with the actual data.  Figure
+\ref{fig:mosaicsfit-plot} displays the GOF plot for our dataset and we 
+conclude that the one- and two-signal-component models provide comparable model fit
+as is also suggested by BIC values. 
+
+<<io-mosaicsfit-plot,eval=FALSE>>=
+plot(fitTFBS)
+@
+
+\begin{figure}[tb]
+\begin{center}
+<<fig-mosaicsfit-plot,fig=TRUE,height=5,width=5,echo=FALSE>>=
+plot(fitTFBS)
+@
+\caption{\label{fig:mosaicsfit-plot} Goodness of Fit (GOF) plot. Depicted are
+actual data for ChIP and control samples with simulated data from the following
+fitted models: (Sim:N): Background model; (Sim:N+S1): one-signal-component
+model; (Sim:N+S1+S2): two-signal-component model. }
+\end{center}
+\end{figure}
+
+\subsection{Identifying Peaks Based on the Fitted Model}\label{mosaicsPeak}
+
+We can now identify peaks
+with the two-signal-component model at a false discovery rate (FDR) of 0.05
+with the command:
+
+<<ts-mosaicspeak>>=
+peakTFBS <- mosaicsPeak( fitTFBS, signalModel="2S", FDR=0.05, 
+maxgap=200, minsize=50, thres=10 )
+@
+
+`\texttt{signalModel="2S"}' indicates two-signal-component model. Similarly,
+one-signal-component model can be specified by `\texttt{signalModel="1S"}'. 
+FDR can be controlled at the desired level by specifying `\texttt{FDR}' argument. 
+In addition to these two essential parameters, you can also control three more
+parameters, `\texttt{maxgap}', `\texttt{minsize}', and `\texttt{thres}'. These
+parameters are for refining initial peaks called using specified signal model
+and FDR.  Initial nearby peaks are merged if the distance (in bp) between them
+is less than `\texttt{maxgap}'. Some initial peaks are removed if their lengths
+are shorter than `\texttt{minsize}' or their ChIP tag counts are less 
+than `\texttt{thres}'.
+
+If you use a bin size shorter than the average fragment length in the
+experiment, we recommend to set `\texttt{maxgap}'  to the  average fragment
+length and `\texttt{minsize}'  to the bin size. This setting removes peaks 
+that are too narrow (e.g., singletons). If you set the bin size to the average
+fragment length (or maybe bin size is larger than the average fragment length),
+we recommend  setting `\texttt{minsize}'  to a value  smaller than the average
+fragment length while leaving `\texttt{maxgap}' the same as the average
+fragment length. This is to prevent filtering using `\texttt{minsize}' because
+initial peaks would already be at a reasonable width. `\texttt{thres}' is
+employed to filter out initial peaks with very small ChIP tag counts because
+such peaks might be false discoveries. Optimal choice of `\texttt{thres}'
+depends on the sequencing depth of the ChIP-seq data to be analyzed. If you
+don't wish to filter out initial peaks using ChIP tag counts, you can set
+`\texttt{thres}'  to an arbitrary negative value.
+
+The following command prints out a summary of identified peaks including 
+the number of  peaks identified, median peak width, and the empirical false
+discovery rate (FDR).
+
+<<io-mosaicspeak-show>>=
+peakTFBS
+@
+
+`\texttt{print}' method returns the peak calling results in data frame format.
+This data frame can be used as an input for downstream analysis such as motif
+finding. This output might have different number of columns, depending on
+`\texttt{analysisType}' of `\texttt{mosaicsFit}'. For example, in the case of two-sample analysis
+(`\texttt{analysisType="IO"}'), columns are chromosome ID, peak start position, peak end
+position, peak width, averaged posterior probability, minimum posterior
+probability, averaged ChIP tag count, maximum ChIP tag count, averaged control
+tag count, averaged control tag count scaled by sequencing depth, and averaged log
+base 2 ratio of ChIP over input tag counts for each peak. Here, the posterior probability of a
+bin refers to  the probability that the bin belongs to background conditional on data.
+Hence, smaller posterior probabilities provide more evidence that the bin is
+actually a peak.
+
+<<io-mosaicspeak-print>>=
+head(print(peakTFBS))
+@
+
+You can export peak calling results to text files in diverse file formats.
+Currently, `\texttt{mosaics}' package supports TXT, BED, GFF, narrowPeak, and broadPeak file formats.
+In the case of TXT file format (`\texttt{type="txt"}'), all the
+columns provided by `\texttt{print}' method are exported. `\texttt{type="bed"}' and
+`\texttt{type="gff"}' export peak calling results in standard BED and GFF file
+formats, respectively, where score is the averaged ChIP tag counts in each peak. 
+narrowPeak and broadPeak are modified BED file formats
+and these file formats are used by the ENCODE
+Consortium and more information about these file formats can be found in
+\url{http://genome.ucsc.edu/FAQ/FAQformat.html}.
+In narrowPeak and broadPeak file formats, the 5th, 7th, and 8th columns are
+averaged log base 2 ratio of ChIP over input tag counts
+(or averaged ChIP tag counts, if the matched control sample is not provided), 
+ChIP signal at peak summit, and -log10 transformed minimum posterior probability.
+Note that narrowPeak and broadPeak file formats are supported 
+only after `\texttt{extractReads}' and `\texttt{findSummit}'
+methods are applied to `\texttt{MosaicsPeak}' object because it requires peak summit information.
+See Section \ref{findSummit} for more information.
+
+Peak calling results can be exported in TXT, BED, GFF, narrowPeak, and broadPeak file formats, 
+respectively, by the following commands, were
+`\texttt{fileLoc}' and `\texttt{fileName}' indicate the directory and the name
+of the exported file:
+
+<<io-mosaicspeak-export,eval=FALSE>>=
+export( peakTFBS, type="txt", filename="peakTFBS.txt" )
+export( peakTFBS, type="bed", filename="peakTFBS.bed" )
+export( peakTFBS, type="gff", filename="peakTFBS.gff" )
+export( peakTFBS, type="narrowPeak", filename="peakTFBS.narrowPeak" )
+export( peakTFBS, type="broadPeak", filename="peakTFBS.broadPeak" )
+@
+         
+\subsection{Generating Wiggle Files to View on Genome Browsers}\label{generateWig}
+
+R package `\texttt{mosaics}' can generate wiggle files (\url{http://genome.ucsc.edu/goldenPath/help/wiggle.html}) for visualization purposes.
+These wiggle files can be used as input for many genome browsers such as the UCSC genome browser (\url{http://genome.ucsc.edu/}) and IGV (\url{http://www.broadinstitute.org/igv/}). 
+These wiggle files can easily be generated from the aligned read files with the command: 
+
+<<generateWig,eval=TRUE>>=
+generateWig( infile=system.file( file.path("extdata","wgEncodeSydhTfbsGm12878Stat1StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, span=200, capping=0, normConst=1 )
+@
+
+The `\texttt{generateWig}' function has similar arguments as the `\texttt{constructBins}' function,
+except that it has `\texttt{span}' and `\texttt{normConst}' arguments 
+instead of the `\texttt{binSize}' argument of the `\texttt{constructBins}' function.
+The `\texttt{generateWig}' function supports the same set of aligned read file formats as in the `\texttt{constructBins}' function.
+The `\texttt{span}' argument indicates span used in wiggle files.
+The `\texttt{normConst}' argument means the normalizing constant to scale the values in wiggle files
+and it is especially useful when wiggle files for multiple related samples are generated and compared.
+In the resulting wiggle files, values are scaled by the value specified in the `\texttt{normConst}' argument.
+
+`\texttt{generateWig}' can generate a single wiggle file containing all chromosomes or multiple wiggle files for each chromosome.
+If `\texttt{byChr=FALSE}', all chromosomes are exported to one file
+named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{span[span].wig}' (for SET data)
+or `\texttt{[infileName]}$\_$\texttt{span[span].wig}' (for PET data),
+where \texttt{[infileName]}, \texttt{[fragLen]}, and \texttt{[span]} are
+name of aligned read file, average fragment length, and span, respectively.
+If `\texttt{byChr=TRUE}', each chromosome is exported to a separate file named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{span[span]}$\_$\texttt{[chrID].wig}' (for SET data) or
+`\texttt{[infileName]}$\_$\texttt{span[span]}$\_$\texttt{[chrID].wig}' (for PET data),
+where \texttt{[chrID]} is chromosome ID that reads align to.
+%These chromosome IDs (\texttt{[chrID]}) are extracted from the aligned read file.
+The constructed wiggle files are exported to the directory 
+specified in `\texttt{outfileLoc}' argument.
+
+\section{Identification of Broad Peaks using MOSAiCS-HMM}\label{analysis_mosaicshmm}
+
+In `\texttt{mosaics}' package, broad peaks can be identified with MOSAiCS-HMM model, using methods `\texttt{mosaicsFitHMM}' and `\texttt{mosaicsPeakHMM}'. In this section, we use ChIP-seq data of H3K4me3 for illustration. For computational efficiency, `\texttt{mosaicsFitHMM}' utilizes MOSAiCS model fit as estimates of emission distribution of MOSAiCS-HMM model. In addition, it also considers MOSAiCS peak calling results at specified FDR level (`\texttt{init.FDR}') as initial values by default. MOSAiCS model fit for H3K4me3 data can be obtained with the commands:
+
+<<mosaicsFitHMM-pre,eval=TRUE>>=
+constructBins( infile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+constructBins( infile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+
+binHM <- readBins( type=c("chip","input"),
+    fileName=c( "~/wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt",
+    "~/wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt" ) )
+fitHM <- mosaicsFit( binHM, analysisType="IO", bgEst="rMOM" )
+@
+
+By taking the MOSAiCS model fit from `\texttt{mosaicsFit}' as an input, users can fit MOSAiCS-HMM with the command:
+
+<<mosaicsFitHMM,eval=TRUE>>=
+hmmHM <- mosaicsFitHMM( fitHM, signalModel = "2S", 
+	init="mosaics", init.FDR = 0.05, parallel=FALSE, nCore=8 )
+@
+
+The following command prints out BIC values of MOSAiCS and MOSAiCS-HMM models
+so that users can determine whether it is beneficial to consider broad peaks using the MOSAiCS-HMM model.
+As before, a lower BIC value indicates a better model fit
+and in this H3K4me3 example, it is beneficial to consider the MOSAiCS-HMM model.
+
+<<mosaicshmmfit-show>>=
+hmmHM
+@
+
+`\texttt{plot}' method also provides the GOF plot, which allows visual
+comparisons of the fits of the background, MOSAiCS, and MOSAiCS-HMM models with the actual data. Figure \ref{fig:mosaicshmmfit-plot} displays the GOF plot for our dataset. 
+
+<<mosaicshmmfit-plot,eval=FALSE>>=
+plot(hmmHM)
+@
+
+\begin{figure}[tb]
+\begin{center}
+<<fig-mosaicshmmfit-plot,fig=TRUE,height=5,width=5,echo=FALSE>>=
+plot(hmmHM)
+@
+\caption{\label{fig:mosaicshmmfit-plot} Goodness of Fit (GOF) plot. Depicted are
+actual data for ChIP and control samples with simulated data from the following
+fitted models: (Sim:Null): Background model; (Sim:MOSAiCS): MOSAiCS
+model; (Sim:MOSAiCS-HMM): MOSAiCS-HMM model. }
+\end{center}
+\end{figure}
+
+`\texttt{mosaicsPeakHMM}' calls peaks based on the MOSAiCS-HMM model fit. `\texttt{mosaicsPeakHMM}' allows two approaches, Viterbi algorithm (`\texttt{decoding="viterbi"}') and posterior decoding (`\texttt{decoding="posterior"}'), to call peaks. When posterior decoding is used (default), users can specify FDR level for the posterior decoding in the argument `\texttt{FDR}'. `\texttt{mosaicsPeakHMM}' provides its output as `\texttt{MosaicsPeak}' class object, which `\texttt{mosaicsPeak}' also generates. Hence, all the methods used for the output of `\texttt{mosaicsPeak}' can also be used for the output of `\texttt{mosaicsPeakHMM}', e.g., `\texttt{export}', `\texttt{print}', and `\texttt{show}'. Users can call peaks based on the MOSAiCS-HMM model fit with the command:
+
+<<mosaicsPeakHMM,eval=TRUE>>=
+peakHM <- mosaicsPeakHMM( hmmHM, FDR = 0.05, decoding="posterior",
+  thres=10, parallel=FALSE, nCore=8 )
+@
+
+Note that `\texttt{mosaicsFitHMM}' and `\texttt{mosaicsPeakHMM}' fits MOSAiCS-HMM model and calls peaks for each chromosome separately. Hence, whenever multiple cores are available, it is strongly recommended to utilize parallel processing by setting `\texttt{parallel=TRUE}' and specifying the number of available cores in the argument `\texttt{nCore}'.
+
+\section{Post-processing Steps after Peak Calling}\label{postprocessing}
+
+\subsection{Identification of Peak Summits}\label{findSummit}
+
+In the case of punctuated peaks, such as regions bound by transcription factors,
+a peak summit (i.e., genomic position with the highest ChIP profile) can potentially be considered
+as exact location of protein-DNA interaction.
+`\texttt{mosaics}' package provides functionality to identify a peak summit
+for each peak region identified using `\texttt{mosaicsPeak}' or  `\texttt{mosaicsPeakHMM}' methods.
+
+As `\texttt{mosaics}' package uses only information from bin-level data until this step,
+users first need to incorporate read-level data to identify peak summits.
+In this section, we consider H3K4me3 data as an example because this read-level data will also be needed in next sections discussing broad peaks.
+Read-level data can be loaded and incorporated into `\texttt{MosaicsPeak}' object, 
+by applying `\texttt{extractReads}' method to `\texttt{MosaicsPeak}' object.
+The `\texttt{extractReads}' function supports the same set of aligned read file formats
+supported in the `\texttt{constructBins}' function.
+
+<<summit-extractreads,eval=TRUE>>=
+peakHM <- extractReads( peakHM,
+  chipFile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"),
+  chipFileFormat="bam", chipPET=FALSE, chipFragLen=200,
+  controlFile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+  controlFileFormat="bam", controlPET=FALSE, controlFragLen=200, parallel=FALSE, nCore=8 )
+peakHM
+@
+
+Users can now identify peak summits by applying `\texttt{findSummit}' method to `\texttt{MosaicsPeak}' object:
+
+<<summit-findsummit,eval=TRUE>>=
+peakHM <- findSummit( peakHM, parallel=FALSE, nCore=8 )
+@
+
+Locations of peak summits are now incorporated as the last column in the peak list:
+
+<<summit-findsummit-print>>=
+head(print(peakHM))
+@
+
+\subsection{Adjust Peak Boundaries and Filter Out Potentially False Positive Peaks}\label{postprocess}
+
+While `\texttt{mosaicsPeakHMM}' provides initial peak calling based on the MOSAiCS-HMM model, we found that these peak calling results can be improved further by post-processing (boundary adjustment and peak filtering). Note that we developed and tested these post-processing steps mainly for broad peaks of histone modifications. While these functions can also be applied to punctuated peaks of transcription factors without any restrictions, parameters for these functions might not be optimal for punctuated peaks.
+
+`\texttt{adjustBoundary}' method checks the ChIP read counts and the ratio of ChIP signal over matched control signal at boundaries and trims/extends peak boundaries to obtain more accurate boundaries:
+
+<<postprocess-adjustboundary>>=
+peakHM <- adjustBoundary( peakHM, parallel=FALSE, nCore=8 )
+peakHM
+head(print(peakHM))
+@
+
+Its summary output indicates that boundaries of 842 peaks are trimmed among 2,424 peaks called using `\texttt{mosaicsPeakHMM}' method. As such peak boundary adjustment can also affect peak summit identification (note that a peak summit should be located within its peak boundaries), peak summits are re-calculated after peak boundaries are adjusted. In this example, locations of 155 peak summits are changed by the peak boundary adjustment procedure.
+
+`\texttt{filterPeak}' further checks the ChIP signal and the ratio of ChIP signal over matched control signal at the peak summit, in addition to the peak length, and filters out potentially false positive peaks:
+
+<<postprocess-filterpeak>>=
+peakHM <- filterPeak( peakHM, parallel=FALSE, nCore=8 )
+peakHM
+head(print(peakHM))
+@
+
+`\texttt{filterPeak}' employs two-step approach for peak filtering and its summary shows the peak filtering results after each step. The summary indicates that about half of the initial peaks (i.e., called using `\texttt{mosaicsPeakHMM}') are filtered out after the first filtering step. Among the remaining peaks, about half of the peaks are further filtered out in the second step. After the peak filtering step using the `\texttt{filterPeak}' method, we have 434 peaks for H3K4me3.
+
+\subsection{Visualization of ChIP Profile of Peak Regions}\label{peakplot}
+
+It is important to check ChIP profile to confirm that we have reasonable peak calling results.
+While \texttt{mosaics} package provides functionality to generate wiggle files
+for the use with genome browsers (See Section \ref{generateWig} for more details),
+users can also generate ChIP profile plots of peak regions directly from \texttt{mosaics} package
+for quick inspection of peak calling results.
+
+In order to generate ChIP profile plots of peak regions, 
+users first need to load read-level data using `\texttt{extractReads}' method,
+as illustrated in Section \ref{findSummit}.
+If `\texttt{extractReads}' method is already applied to `\texttt{MosaicsPeak}' object,
+users can generate ChIP profile plots of all the peak regions 
+and save them as a single PDF file named `\texttt{peakplot.pdf}' by the command:
+
+<<summit-findsummit-plot, eval=FALSE>>=
+plot( peakHM, filename="~/peakplot.pdf" )
+@
+
+If users are interested only in some specific peak regions,
+users can specify peak regions to plot their ChIP profiles with the argument `\texttt{peakNum}'.
+The input to argument `\texttt{peakNum}' can be a vector, 
+where elements indicate the row indexes in the peak list.
+For example, the 8-th peak of H3K4me3 is located at chr22:18120496-18122661 and 
+18-th peak of STAT1 factor overlaps this H3K4me3 peak:
+
+<<summit-findsummit-plot-peaknum-print, eval=TRUE>>=
+print(peakHM)[8,]
+print(peakTFBS)[18,]
+@
+
+We can plot the ChIP profile of this H3K4me3 peak with command:
+
+<<summit-findsummit-plot-peaknum, eval=FALSE>>=
+plot( peakHM, peakNum=8 )
+@
+
+Figure \ref{fig:peakplot} shows ChIP profile plot of H3K4me3 generated using `\texttt{plot}' method. It indicates there is actually strong bimodal ChIP signal in this region.
+
+\begin{figure}[tb]
+\begin{center}
+<<fig-summit-findsummit-plot-peaknum-hm,fig=TRUE,height=5,width=5,echo=FALSE>>=
+plot( peakHM, peakNum=8 )
+@
+\caption{\label{fig:peakplot} Example ChIP profile plot of H3K4me3 modification in GM12878 cell line.}
+\end{center}
+\end{figure}
+
+For more extensive investigation, the wiggle files for STAT1 and H3K4me3 generated using `\texttt{generateWig}' method can be used for genome browsers. Figure \ref{fig:IGV} shows the IGV screenshot of ChIP-seq data of STAT1 and H3K4me3 in the promoter region of BCL2L13, where the 8-th peak of H3K4me3 is located at. It shows that there are overlapping STAT1 binding and H3K4me3 modification in the promoter region of BCL2L13 gene, as suggested by the MOSAiCS and MOSAiCS-HMM peak calling results. This might indicate that BCL2L13 is a target gene of STAT factor and this gene is also transcribed in GM12878 cell line.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth] {igv.pdf}
+\caption{IGV screenshot of ChIP-seq data of STAT1 and H3K4me3 at the promoter region of BCL2L13.
+\label{fig:IGV} }
+\end{figure}
+
 \section{Two-Sample Analysis using \texttt{'mosaicsRunAll'}}\label{mosaicsRunAll}
 
-Two-sample analysis without mappability and GC content can be done 
+Two-sample analysis without mappability and GC content can also be done 
 in a more convenient way, with the command: 
 
 <<mosaicsRunAll,eval=FALSE>>=
@@ -201,494 +753,6 @@ Argument & Explanation \\
 \end{center}
 \end{table}
 
-\section{Workflow: Two-Sample Analysis}\label{two_sample_no_MGC}
-
-\subsection{Constructing Bin-Level Files from the Aligned Read File}\label{constructBins}
-
-R package `\texttt{mosaics}' analyzes the data after converting aligned read files 
-into bin-level files for modeling and visualization purposes.
-These bin-level data can easily be generated from the aligned read files with the command: 
-
-<<constructBins,eval=FALSE>>=
-constructBins( infile="/scratch/eland/STAT1_eland_results.txt", 
-    fileFormat="eland_result", outfileLoc="/scratch/eland/", 
-    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr="chrM", 
-    PET=FALSE, fragLen=200, binSize=200, capping=0 )
-@
-
-You can specify the name and file format of the aligned read file 
-in `\texttt{infile}' and `\texttt{fileFormat}' arguments, respectively.
-The `\texttt{PET}' argument indicates whether the file is paired-end tag (`\texttt{PET=TRUE}') or single-end tag (`\texttt{PET=FALSE}') ChIP-Seq data.
-Allowed aligned read file formats depend on the `\texttt{PET}' argument.
-`\texttt{constructBins}' method currently allows the following aligned read file formats for SET ChIP-Seq data:
-BAM (`\texttt{"bam"}'), SAM (`\texttt{"sam"}'), BED (`\texttt{"bed"}'), 
-Eland result (`\texttt{"eland}$\_$\texttt{result"}'), Eland extended (`\texttt{"eland}$\_$\texttt{extended"}'),
-Eland export (`\texttt{"eland}$\_$\texttt{export"}'), default Bowtie (`\texttt{"bowtie"}'), and CSEM BED (`\texttt{"csem"}').
-%This method assumes that these aligned read files are obtained from single-end tag (SET) experiments.
-For PET ChIP-Seq data, `\texttt{constructBins}' method currently accepts the
-BAM (`\texttt{"bam"}'), SAM (`\texttt{"sam"}'), and Eland result (`\texttt{"eland}$\_$\texttt{result"}') file formats.
-If input file format is neither BED nor CSEM BED,
-it retains only reads mapping uniquely to the reference genome (uni-reads). 
-See Appendices \ref{example_aligned_SET} and \ref{example_aligned_PET} for example lines of each aligned read file format.
-
-Even though `\texttt{constructBins}' retains only uni-reads for most aligned read file formats,
-reads mapping to multiple locations on the reference genome (multi-reads)
-can be easily incorporated into bin-level files by utilizing our multi-read allocator, 
-\texttt{CSEM} (ChIP-Seq multi-read allocator using Expectation-Maximization algorithm).
-Galaxy tool for CSEM is available in Galaxy Tool Shed (\url{http://toolshed.g2.bx.psu.edu/}; ``csem'' under ``Next Gen Mappers''). Stand-alone version of CSEM is also available at \url{http://www.stat.wisc.edu/~keles/Software/multi-reads/}.
-CSEM exports uni-reads and allocated multi-reads into standard BED file
-and the corresponding bin-level files can be constructed 
-by applying `\texttt{constructBins}' method to this BED file with the argument
-`\texttt{fileFormat="csem"}'.
-
-`\texttt{constructBins}' can generate a single bin-level file containing all chromosomes
-(for a genome-wide analysis) or multiple bin-level files for each chromosome
-(for a chromosome-wise analysis).
-If `\texttt{byChr=FALSE}', bin-level data for all chromosomes are exported to one file
-named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{bin[binSize].txt}' (for SET data)
-or `\texttt{[infileName]}$\_$\texttt{bin[binSize].txt}' (for PET data),
-where \texttt{[infileName]}, \texttt{[fragLen]}, and \texttt{[binSize]} are
-name of aligned read file, average fragment length, and bin size, respectively.
-If `\texttt{byChr=TRUE}', bin-level data for each chromosome is exported
-to a separate file named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{bin[binSize]}$\_$\texttt{[chrID].txt}' (for SET data) or `\texttt{[infileName]}$\_$\texttt{bin[binSize]}$\_$\texttt{[chrID].txt}' (for PET data),
-where \texttt{[chrID]} is chromosome ID that reads align to.
-These chromosome IDs (\texttt{[chrID]}) are extracted from the aligned read file.
-The constructed bin-level files are exported to the directory 
-specified in `\texttt{outfileLoc}' argument.
-
-The `\texttt{useChrfile}' argument indicates whether to use the file containing chromosome ID and chromosome size, which is specified in the `\texttt{chrfile}' argument.
-See Appendix \ref{example_chrfile} for the example lines of this chromosome information file.
-If you want to exclude some chromosomes in the processed bin-level files,
-you can specify these chromosomes in `\texttt{excludeChr}' argument.
-The `\texttt{excludeChr}' argument will be ignored if `\texttt{useChrfile=TRUE}'.
-
-You can specify average fragment length and bin size in `\texttt{fragLen}' and `\texttt{binSize}' arguments, respectively,
-and these arguments control the resolution of bin-level ChIP-seq data.
-By default, average fragment length is set to 200 bp, which is the common fragment length
-for Illumina sequences, and bin size equals to average fragment length.
-The `\texttt{fragLen}' argument is ignored for PET ChIP-seq data (`\texttt{PET = TRUE}').
-`\texttt{capping}' argument indicates maximum number of reads allowed to start at each nucleotide position.
-Using some small value for capping (e.g., `\texttt{capping=3}') will exclude extremely large read counts that might correspond to PCR amplification artifacts, which is especially useful for the ChIP-seq data with low sequencing depth. 
-Capping is not applied (default) if `\texttt{capping}' is set to some non-positive value, e.g., `\texttt{capping=0}'.
-
-\subsection{Reading Bin-Level Data into the R Environment}\label{readBins}
-
-You now have bin-level ChIP data and matched control sample data
-from '\texttt{constructBins}'.
-In this vignette, we use chromosome 21 data from a ChIP-seq
-experiment of STAT1 binding in interferon-$\gamma$-stimulated HeLa S3 cells
-\cite{stat1}. `\texttt{mosaicsExample}' package provides this example dataset.
-
-<<mosaicsExample-prelim>>=
-library(mosaicsExample)
-@
-
-Bin-level data can be imported to the R environment with the command:
-
-<<io-readbin>>=
-exampleBinData <- readBins( type=c("chip","input"),
-    fileName=c( system.file( file.path("extdata","chip_chr21.txt"), package="mosaicsExample"),
-    system.file( file.path("extdata","input_chr21.txt"), package="mosaicsExample") ) )
-@
-
-For the  `\texttt{type}' argument, 
-\texttt{"chip"} and \texttt{"input"} indicate bin-level ChIP data
-control sample data, respectively. You need to specify the corresponding file names 
-in `\texttt{fileName}'. `\texttt{mosaics}' package assumes that each file name 
-in `\texttt{fileName}' is provided in the same order as in `\texttt{type}'. 
-
-In \texttt{mosaics} package, you can do either genome-wide analysis or chromosome-wise analysis
-and this analysis type will be determined automatically 
-based on the contents of bin-level files imported using `\texttt{readBins}'.
-If the bin-level files contain more than one chromosome
-(i.e., bin-level files are obtained using `\texttt{byChr=FALSE}' in `\texttt{constructBins}'), 
-`\texttt{mosaicsFit}' will analyze all the chromosomes simultaneously (genome-wide analysis).
-Note that if these bin-level files contain different sets of chromosomes,
-then `\texttt{readBins}' method will utilize only the intersection of them.
-If bin-level files are obtained using `\texttt{byChr=FALSE}' in `\texttt{constructBins}',
-each bin-level file contains data for only one chromosome
-and each of these bin-level files need to be analyzed separately (chromosome-wise analysis).
-The genome-wide analysis usually provide more stable model fitting and peak identification results
-so it is recommended for most cases.
-
-R package \texttt{mosaics} provides functions for generating simple summaries
-of the data. The following command prints out basic information about the
-bin-level data, such as number of bins and total ``effective tag counts''.
-``Total effective tag counts'' is defined as the sum of the ChIP tag counts of all
-bins. This value is usually larger than the sequencing depth since tags are
-counted after extension to average fragment length and an extended fragment can
-contribute to multiple bins. 
-
-<<io-bindata-show>>=
-exampleBinData
-@
-
-`\texttt{print}' method returns the bin-level data in data frame format.
-
-<<io-bindata-print>>=
-print(exampleBinData)[51680:51690,]
-@
-
-`\texttt{plot}' method provides exploratory plots for the ChIP data. Different
-type of plots can be obtained by varying the `\texttt{plotType}' argument.
-`\texttt{plotType="input"}' generates a plot of mean ChIP tag counts versus
-control tag counts. If `\texttt{plotType}' is not specified, this method plots the
-histogram of ChIP tag counts.
-
-<<io-bindata-plot,eval=FALSE>>=
-plot( exampleBinData )
-plot( exampleBinData, plotType="input" )
-@
-
-Figures \ref{fig:bindata-plot-hist} and \ref{fig:bindata-plot-input} display
-examples of different types of plots. The relationship
-between mean ChIP tag counts and control tag counts seems to be linear,
-especially for small  control tag counts (Figure \ref{fig:bindata-plot-input}).
-
-\begin{figure}[tb]
-\begin{center}
-<<fig-bindata-plot-hist,fig=TRUE,height=5,width=5,echo=FALSE>>=
-plot(exampleBinData)
-@
-\caption{\label{fig:bindata-plot-hist} Histograms of the  count data 
-from ChIP and control samples.}
-\end{center}
-\end{figure}
-
-\begin{figure}[tb]
-\begin{center}
-<<fig-bindata-plot-input,fig=TRUE,height=5,width=5,echo=FALSE>>=
-plot( exampleBinData, plotType="input" )
-@
-\caption{\label{fig:bindata-plot-input} Mean ChIP tag count versus
-Control tag count.}
-\end{center}
-\end{figure}
-
-\subsection{Fitting the MOSAiCS Model}\label{mosaicsFit}
-
-We are now ready to fit a MOSAiCS model using the bin-level data above
-(\texttt{exampleBinData})   with the command:
-
-<<io-mosaicsfit>>=
-exampleFit <- mosaicsFit( exampleBinData, analysisType="IO", bgEst="rMOM" )
-@
-
-`\texttt{analysisType="IO"}' indicates implementation of the two-sample analysis.
-`\texttt{bgEst}' argument determines background estimation approach.
-`\texttt{bgEst="matchLow"}' estimates background distribution using only bins with low tag counts
-and it is appropriate for the data with relatively low sequencing depth. 
-`\texttt{bgEst="rMOM"}' estimates background distribution using robust method of moment (MOM) (default) and
-it is appropriate for the data with relatively high sequencing depth.
-If `\texttt{bgEst="automatic"}', `\texttt{mosaicsFit}' tries its best guess 
-for the background estimation approach, based on the data provided.
-If the goodness of fit obtained using `\texttt{bgEst="automatic"}' is not satisfactory,
-we recommend to try `\texttt{bgEst="matchLow"}' and `\texttt{bgEst="rMOM"}' 
-and it might improve the model fit.
-
-`\texttt{mosaicsFit}' fits both one-signal-component and two-signal-component
-models. When identifying peaks, you can choose the number of signal components
-to be used for the final model. The optimal choice of the number of signal
-components depends on the characteristics of data. In order to support users
-in the choice of optimal signal model, \texttt{mosaics} package provides
-Bayesian Information Criterion (BIC) values and Goodness of Fit (GOF) plots
-of these signal models. 
-
-The following command prints out BIC values of one-signal-component and
-two-signal-component models, with additional information about the parameters
-used in fitting the background (non-enriched) distribution. A lower BIC value
-indicates a better model fit. For this dataset, we conclude that the
-two-signal-component model has a lower BIC and hence it provides a better fit.
-
-<<io-mosaicsfit-show>>=
-exampleFit
-@
-
-`\texttt{plot}' method provides the GOF plot.  This plots allows visual
-comparisons of the fits of the background, one-signal-component, and
-two-signal-component models with the actual data.  Figure
-\ref{fig:mosaicsfit-plot} displays the GOF plot for our dataset and we 
-conclude that the two-signal-component model provides a better fit as is also
-supported by its lower BIC value compared to the one-signal component model. 
-
-<<io-mosaicsfit-plot,eval=FALSE>>=
-plot(exampleFit)
-@
-
-\begin{figure}[tb]
-\begin{center}
-<<fig-mosaicsfit-plot,fig=TRUE,height=5,width=5,echo=FALSE>>=
-plot(exampleFit)
-@
-\caption{\label{fig:mosaicsfit-plot} Goodness of Fit (GOF) plot. Depicted are
-actual data for ChIP and control samples with simulated data from the following
-fitted models: (Sim:N): Background model; (Sim:N+S1): one-signal-component
-model; (Sim:N+S1+S2): two-signal-component model. }
-\end{center}
-\end{figure}
-
-\subsection{Identifying Peaks Based on the Fitted Model}\label{mosaicsPeak}
-
-Using BIC values and GOF plots in the previous section, we concluded that
-two-signal-component model fits our data better. Next, we will identify peaks
-with the two-signal-component model at a false discovery rate (FDR) of 0.05
-using the command:
-
-<<ts-mosaicspeak>>=
-examplePeak <- mosaicsPeak( exampleFit, signalModel="2S", FDR=0.05, 
-maxgap=200, minsize=50, thres=10 )
-@
-
-`\texttt{signalModel="2S"}' indicates two-signal-component model. Similarly,
-one-signal-component model can be specified by `\texttt{signalModel="1S"}'. 
-FDR can be controlled at the desired level by specifying `\texttt{FDR}' argument. 
-In addition to these two essential parameters, you can also control three more
-parameters, `\texttt{maxgap}', `\texttt{minsize}', and `\texttt{thres}'. These
-parameters are for refining initial peaks called using specified signal model
-and FDR.  Initial nearby peaks are merged if the distance (in bp) between them
-is less than `\texttt{maxgap}'. Some initial peaks are removed if their lengths
-are shorter than `\texttt{minsize}' or their ChIP tag counts are less 
-than `\texttt{thres}'.
-
-If you use a bin size shorter than the average fragment length in the
-experiment, we recommend to set `\texttt{maxgap}'  to the  average fragment
-length and `\texttt{minsize}'  to the bin size. This setting removes peaks 
-that are too narrow (e.g., singletons). If you set the bin size to the average
-fragment length (or maybe bin size is larger than the average fragment length),
-we recommend  setting `\texttt{minsize}'  to a value  smaller than the average
-fragment length while leaving `\texttt{maxgap}' the same as the average
-fragment length. This is to prevent filtering using `\texttt{minsize}' because
-initial peaks would already be at a reasonable width. `\texttt{thres}' is
-employed to filter out initial peaks with very small ChIP tag counts because
-such peaks might be false discoveries. Optimal choice of `\texttt{thres}'
-depends on the sequencing depth of the ChIP-seq data to be analyzed. If you
-don't wish to filter out initial peaks using ChIP tag counts, you can set
-`\texttt{thres}'  to an arbitrary negative value.
-
-The following command prints out a summary of identified peaks including 
-the number of  peaks identified, median peak width, and the empirical false
-discovery rate (FDR).
-
-<<io-mosaicspeak-show>>=
-examplePeak
-@
-
-`\texttt{print}' method returns the peak calling results in data frame format.
-This data frame can be used as an input for downstream analysis such as motif
-finding. This output might have different number of columns, depending on
-`\texttt{analysisType}' of `\texttt{mosaicsFit}'. For example, if
-`\texttt{analysisType="TS"}', columns are peak start position, peak end
-position, peak width, averaged posterior probability, minimum posterior
-probability, averaged ChIP tag count, maximum ChIP tag count, averaged control
-tag count, averaged control tag count scaled by sequencing depth, averaged log
-base 2 ratio of ChIP over input tag counts, averaged mappability score, and
-averaged GC content score for each peak. Here, the posterior probability of a
-bin refers to  the probability that the bin is not a peak conditional on data.
-Hence, smaller posterior probabilities provide more evidence that the bin is
-actually a peak.
-
-<<io-mosaicspeak-print>>=
-print(examplePeak)[1:15,]
-@
-
-You can export peak calling results to text files in diverse file formats.
-Currently, `\texttt{mosaics}' package supports TXT, BED, GFF, narrowPeak, and broadPeak file formats.
-In the exported file, TXT file format (`\texttt{type="txt"}') includes all the
-columns that `\texttt{print}' method returns. `\texttt{type="bed"}' and
-`\texttt{type="gff"}' export peak calling results in standard BED and GFF file
-formats, respectively, where score is the averaged ChIP tag counts in each peak. 
-
-narrowPeak and broadPeak are modified BED file formats
-and these file formats are used by the ENCODE (Encyclopedia of DNA Elements)
-Consortium and more information about these file formats can be found in
-\url{http://genome.ucsc.edu/FAQ/FAQformat.html}.
-In these file formats, 
-Note that narrowPeak format is supported only after `\texttt{extractReads}' and `\texttt{findSummit}'
-methods are applied to `\texttt{MosaicsPeak}' object because it requires peak summit information.
-See Section \ref{findSummit} for more information.
-
-Peak calling results can be exported in TXT, BED, GFF, narrowPeak, and broadPeak file formats, 
-respectively, by the commands:
-
-<<io-mosaicspeak-export>>=
-export( examplePeak, type="txt", filename="IOpeakList.txt" )
-export( examplePeak, type="bed", filename="IOpeakList.bed" )
-export( examplePeak, type="gff", filename="IOpeakList.gff" )
-export( examplePeak, type="narrowPeak", filename="IOpeakList.narrowPeak" )
-export( examplePeak, type="broadPeak", filename="IOpeakList.broadPeak" )
-@
-
-`\texttt{fileLoc}' and `\texttt{fileName}' indicate the directory and the name
-of the exported file.
-
-\section{Identification of Peak Summits}\label{findSummit}
-
-In the case of punctuated peaks, such as regions bound by transcription factors,
-a peak summit (i.e., genomic position with the highest ChIP profile) is considered
-as potentially exact location of protein-DNA interaction.
-`\texttt{mosaics}' package provides functionality to identify a peak summit
-for each peak region identified using `\texttt{mosaicsPeak}' method.
-
-As `\texttt{mosaics}' package uses only information from bin-level data until this step,
-users first need to load read-level data to identify peak summits.
-Read-level data can be loaded and incorporated into `\texttt{MosaicsPeak}' object, 
-by applying `\texttt{extractReads}' method to `\texttt{MosaicsPeak}' object:
-
-<<summit-extractreads,eval=FALSE>>=
-examplePeak <- extractReads( examplePeak,
-  chipFile="/scratch/eland/STAT1_ChIP_eland_results.txt", chipFileFormat="eland_result",
-  chipPET=FALSE, chipFragLen=200,
-  controlFile="/scratch/eland/STAT1_control_eland_results.txt", controlFileFormat="eland_result", 
-  controlPET=FALSE, controlFragLen=200, parallel=TRUE, nCore=8 )
-examplePeak
-@
-
-<<load-extractreads,echo=FALSE>>=
-load( "" )
-examplePeak
-@
-
-The `\texttt{extractReads}' function supports the same set of aligned read file formats as in the `\texttt{constructBins}' function.
-
-Users can now identify peak summits by applying `\texttt{findSummit}' method to `\texttt{MosaicsPeak}' object:
-
-<<summit-findsummit,eval=TRUE>>=
-examplePeak <- findSummit( examplePeak, parallel=TRUE, nCore=8 )
-@
-
-Locations of peak summits are now incorporated as the column in the peak list:
-
-<<summit-findsummit-print>>=
-print(examplePeak)[1:15,]
-@
-
-\section{Visualization of ChIP Profile of Peak Regions}\label{peakplot}
-
-Visualization of ChIP profile is a critical step in the ChIP-seq data analysis.
-While `\texttt{mosaics}' package provides functionality to generate wiggle files
-for the use with genome browsers (See Section \ref{generateWig} for more details),
-users can also generate ChIP profile plots of peak regions directly from `\texttt{mosaics}' package
-for quick inspection of peak calling results.
-
-In order to generate ChIP profile plots of peak regions, 
-users first need to load read-level data using `\texttt{extractReads}' method,
-as illustrated in Section \ref{findSummit}.
-If `\texttt{extractReads}' method is already applied to `\texttt{MosaicsPeak}' object,
-users can generate ChIP profile plots of peak regions as a PDF file named `\texttt{peakplot.pdf}' by the command:
-
-<<summit-findsummit-plot>>=
-plot( examplePeak, filename="peakplot.pdf" )
-@
-
-If users are interested only in some specific peak regions,
-users can specify peak regions to generate ChIP profile plots with the argument `\texttt{peakNum}':
-
-<<summit-findsummit-plot-peaknum>>=
-plot( examplePeak, peakNum=1 )
-@
-
-The input to argument `\texttt{peakNum}' is a vector,
-where elements indicate the row indexes in the peak list.
-
-\section{Identification of Broad Peaks using MOSAiCS-HMM}\label{analysis_mosaicshmm}
-
-In `\texttt{mosaics}' package, broad peaks can be identified with MOSAiCS-HMM model, using methods `\texttt{mosaicsFitHMM}' and `\texttt{mosaicsPeakHMM}'. Although we have punctuated peaks for STAT1, we still use it for the illustrative purpose. For computational efficiency, `\texttt{mosaicsFitHMM}' utilizes MOSAiCS model fit as estimates of emission distribution of MOSAiCS-HMM model. In addition, it also considers MOSAiCS peak calling results at specified FDR level (`\texttt{init.FDR}') as initial values by default. By taking the MOSAiCS model fit from `\texttt{mosaicsFit}' as an input, users can fit MOSAiCS-HMM with the command:
-
-<<mosaicsFitHMM,eval=TRUE>>=
-exampleFitHMM <- mosaicsFitHMM( exampleFit, signalModel = "2S", 
-	init="mosaics", init.FDR = 0.05, parallel=FALSE, nCore=8 )
-@
-
-The following command prints out BIC values of MOSAiCS and MOSAiCS-HMM models
-so that users can determine whether it is beneficial to consider broad peaks using MOSAiCS-HMM. As before, a lower BIC value indicates a better model fit.
-
-<<mosaicshmmfit-show>>=
-exampleFitHMM
-@
-
-`\texttt{plot}' method also provides the GOF plot, which allows visual
-comparisons of the fits of the background, MOSAiCS, and MOSAiCS-HMM models with the actual data. Figure \ref{fig:mosaicshmmfit-plot} displays the GOF plot for our dataset. 
-
-<<mosaicshmmfit-plot,eval=FALSE>>=
-plot(exampleFitHMM)
-@
-
-\begin{figure}[tb]
-\begin{center}
-<<fig-mosaicshmmfit-plot,fig=TRUE,height=5,width=5,echo=FALSE>>=
-plot(exampleFitHMM)
-@
-\caption{\label{fig:mosaicshmmfit-plot} Goodness of Fit (GOF) plot. Depicted are
-actual data for ChIP and control samples with simulated data from the following
-fitted models: (Sim:Null): Background model; (Sim:MOSAiCS): MOSAiCS
-model; (Sim:MOSAiCS-HMM): MOSAiCS-HMM model. }
-\end{center}
-\end{figure}
-
-`\texttt{mosaicsPeakHMM}' calls peaks based on the MOSAiCS-HMM model fit. `\texttt{mosaicsPeakHMM}' allows two approaches, Viterbi algorithm (`\texttt{decoding="viterbi"}') and posterior decoding (`\texttt{decoding="posterior"}'), to call peaks. When posterior decoding is used, users can specify FDR level for the posterior decoding in the argument `\texttt{FDR}'. `\texttt{mosaicsPeakHMM}' provides its output as `\texttt{MosaicsPeak}' class object, which `\texttt{mosaicsPeak}' also generates. Hence, all the methods used for the output of `\texttt{mosaicsPeak}' can also be used for the output of `\texttt{mosaicsPeakHMM}', e.g., `\texttt{export}', `\texttt{print}', and `\texttt{show}'. Users can call peaks based on the MOSAiCS-HMM model fit with the command:
-
-<<mosaicsPeakHMM,eval=TRUE>>=
-examplePeakHMM1 <- mosaicsPeakHMM( exampleFitHMM, decoding="viterbi",
-  parallel=FALSE, nCore=8 )
-examplePeakHMM2 <- mosaicsPeakHMM( exampleFitHMM, FDR = 0.05, decoding="posterior",
-  parallel=FALSE, nCore=8 )
-@
-
-Note that `\texttt{mosaicsFit}' fits MOSAiCS-HMM model and `\texttt{mosaicsPeakHMM}' calls peaks for each chromosome separately. Hence, whenever multiple cores are available, it is strongly recommended to utilize parallel processing by setting `\texttt{parallel=TRUE}' and specifying the number of available cores in the argument `\texttt{nCore}'.
-
-\section{Adjust Peak Boundaries and Filter Out Potentially False Positive Peaks}\label{postprocess}
-
-Note that we developed and tested these post-processing steps mainly for broad peaks from histone modifications.
-While these functions can also be applied to punctuated peaks for transcription factors without any restrictions,
-the parameters for these functions might not be optimal for punctuated peaks.
-
-<<postprocess-adjustboundary>>=
-examplePeakHMM2 <- adjustBoundary( examplePeakHMM2, parallel=TRUE, nCore=8 )
-peakHMM
-head(print(peakHMM))
-@
-
-<<postprocess-filterpeak>>=
-examplePeakHMM2 <- filterPeak( examplePeakHMM2, parallel=TRUE, nCore=8 )
-peakHMM
-head(print(peakHMM))
-@
-         
-\section{Generating Wiggle Files to View on Genome Browsers}\label{generateWig}
-
-R package `\texttt{mosaics}' can generate wiggle files (\url{http://genome.ucsc.edu/goldenPath/help/wiggle.html}) for visualization purposes.
-These wiggle files can be used as input for many genome browsers such as the UCSC genome browser (\url{http://genome.ucsc.edu/}). 
-These wiggle files can easily be generated from the aligned read files with the command: 
-
-<<generateWig,eval=FALSE>>=
-generateWig( infile="/scratch/eland/STAT1_eland_results.txt", 
-    fileFormat="eland_result", outfileLoc="/scratch/eland/", 
-    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr="chrM", 
-    PET=FALSE, fragLen=200, span=200, capping=0, normConst=1 )
-@
-
-The `\texttt{generateWig}' function has similar arguments as the `\texttt{constructBins}' function,
-except that it has `\texttt{span}' and `\texttt{normConst}' arguments 
-instead of the `\texttt{binSize}' argument of the `\texttt{constructBins}' function.
-The `\texttt{generateWig}' function supports the same set of aligned read file formats as in the `\texttt{constructBins}' function.
-The `\texttt{span}' argument indicates span used in wiggle files.
-The `\texttt{normConst}' argument means the normalizing constant to scale the values in wiggle files
-and it is especially useful when wiggle files for multiple related samples are generated and compared.
-In the resulting wiggle files, values are scaled by the value specified in the `\texttt{normConst}' argument.
-
-`\texttt{generateWig}' can generate a single wiggle file containing all chromosomes or multiple wiggle files for each chromosome.
-If `\texttt{byChr=FALSE}', all chromosomes are exported to one file
-named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{span[span].wig}' (for SET data)
-or `\texttt{[infileName]}$\_$\texttt{span[span].wig}' (for PET data),
-where \texttt{[infileName]}, \texttt{[fragLen]}, and \texttt{[span]} are
-name of aligned read file, average fragment length, and span, respectively.
-If `\texttt{byChr=TRUE}', each chromosome is exported to a separate file named as `\texttt{[infileName]}$\_$\texttt{fragL[fragLen]}$\_$\texttt{span[span]}$\_$\texttt{[chrID].wig}' (for SET data) or
-`\texttt{[infileName]}$\_$\texttt{span[span]}$\_$\texttt{[chrID].wig}' (for PET data),
-where \texttt{[chrID]} is chromosome ID that reads align to.
-%These chromosome IDs (\texttt{[chrID]}) are extracted from the aligned read file.
-The constructed wiggle files are exported to the directory 
-specified in `\texttt{outfileLoc}' argument.
-
 \section{Two-Sample Analysis with Mappability and GC Content}\label{two_sample_MGC}
 
 For the two-sample analysis with mappability and GC content and the one-sample analysis,
@@ -707,6 +771,9 @@ all the related scripts and easy-to-follow instructions to prepare these files.
 Please check \url{http://www.stat.wisc.edu/~keles/Software/mosaics/} 
 for more details.
 
+In this section, we use chromosome 21 data from a ChIP-seq
+experiment of STAT1 binding in interferon-$\gamma$-stimulated HeLa S3 cells \cite{stat1}. 
+`\texttt{mosaicsExample}' package also provides this example dataset.
 You can import bin-level data and fit MOSAiCS model 
 for the two-sample analysis using mappability and GC content with the commands:
 
@@ -961,6 +1028,9 @@ We thank Gasch, Svaren, Chang, Kiley, Bresnick, Pike, and Donohue Labs at the Un
 \bibitem{mosaics} Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Kele\c{s}
 (2010), ``A Statistical Framework for the Analysis of ChIP-Seq Data'',
 \textit{Journal of the American Statistical Association}, 106, 891-903.
+\bibitem{mosaicsHMM} Chung, D, Zhang Q, and Kele\c{s} S (2014), 
+``MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data'',
+Datta S and Nettleton D (eds.), \textit{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 \bibitem{stat1} Rozowsky, J, G Euskirchen, R Auerbach, D Zhang, T Gibson, 
 R Bjornson, N Carriero, M Snyder, and M Gerstein (2009), ``PeakSeq enables
 systematic scoring of ChIP-Seq experiments relative to controls'',
@@ -968,9 +1038,6 @@ systematic scoring of ChIP-Seq experiments relative to controls'',
 \bibitem{bookchapter} Sun, G, D Chung, K Liang, S Kele\c{s} (2012), 
 ``Statistical Analysis of ChIP-Seq Data with MOSAiCS'',
 \textit{Methods in Molecular Biology}, 1038, 193-212.
-\bibitem{mosaicsHMM} Chung, D, Zhang Q, and Kele\c{s} S (2014), 
-``MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data'',
-Datta S and Nettleton D (eds.), \textit{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 \end{thebibliography}
 
 \appendix

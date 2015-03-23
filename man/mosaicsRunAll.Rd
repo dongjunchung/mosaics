@@ -208,8 +208,10 @@ to the file with the name specified in \code{gofFile} (PDF file).
 Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Keles (2011), 
 "A Statistical Framework for the Analysis of ChIP-Seq Data", 
 \emph{Journal of the American Statistical Association}, Vol. 106, pp. 891-903.
+
+Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
-\author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles }
+\author{ Dongjun Chung, Pei Fen Kuan, Rene Welch, Sunduz Keles }
 \seealso{
 \code{\link{constructBins}}, \code{\link{readBins}}, 
 \code{\link{mosaicsFit}}, \code{\link{mosaicsPeak}}, \code{\link{export}},

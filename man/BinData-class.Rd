@@ -12,6 +12,12 @@
 \alias{print,BinData-method}
 \alias{show,BinData-method}
 \alias{tagCount,BinData-method}
+\alias{chrID}
+\alias{coord}
+\alias{gcContent}
+\alias{input}
+\alias{mappability}
+\alias{tagCount}
 
 \title{Class "BinData" }
 \description{
@@ -56,14 +62,22 @@ Objects can be created by calls of the form \code{new("BinData", ...)}.
     \item{print}{\code{signature(x = "BinData")}: 
         return bin-level data in data frame format. }
     \item{show}{\code{signature(object = "BinData")}: provide brief summary of the object. }
+    \item{chrID}{\code{signature(object = "BinData")}: provide a vector of chromosome ID. }
+    \item{coord}{\code{signature(object = "BinData")}: provide a vector of genomic coordinates. }
+    \item{tagCount}{\code{signature(object = "BinData")}: provide a vector of tag count of ChIP sample. }
+    \item{input}{\code{signature(object = "BinData")}: provide a vector of tag count of input sample. }
+    \item{mappability}{\code{signature(object = "BinData")}: provide a vector of mappability score. }
+    \item{gcContent}{\code{signature(object = "BinData")}: provide a vector of GC content score. }
      }
 }
 \references{
 Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Keles (2011), 
 "A Statistical Framework for the Analysis of ChIP-Seq Data", 
 \emph{Journal of the American Statistical Association}, Vol. 106, pp. 891-903.
+
+Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for detecting regions of histone modifications from ChIP-seq data", Datta S and Nettleton D (eds.), \emph{Statistical Analysis of Next Generation Sequencing Data}, Springer.
 }
-\author{ Dongjun Chung, Pei Fen Kuan, Sunduz Keles }
+\author{ Dongjun Chung, Pei Fen Kuan, Rene Welch, Sunduz Keles }
 \seealso{
 \code{\link{readBins}}, \code{\link{mosaicsFit}}.
 }

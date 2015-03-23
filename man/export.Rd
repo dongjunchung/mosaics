@@ -51,12 +51,44 @@ Chung, D, Zhang Q, and Keles S (2014), "MOSAiCS-HMM: A model-based approach for 
 \examples{
 \dontrun{
 library(mosaicsExample)
-data(exampleFit)
 
-examplePeak <- mosaicsPeak( exampleFit, signalModel = "2S", FDR = 0.05 )
-export( examplePeak, type = "txt", filename = "./TSpeakList.txt" )
-export( examplePeak, type = "bed", filename = "./TSpeakList.bed" )
-export( examplePeak, type = "gff", filename = "./TSpeakList.gff" )
+constructBins( infile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+constructBins( infile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+    fileFormat="bam", outfileLoc="~/", 
+    byChr=FALSE, useChrfile=FALSE, chrfile=NULL, excludeChr=NULL, 
+    PET=FALSE, fragLen=200, binSize=200, capping=0 )
+
+binHM <- readBins( type=c("chip","input"),
+    fileName=c( "~/wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt",
+    "~/wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam_fragL200_bin200.txt" ) )
+fitHM <- mosaicsFit( binHM, analysisType="IO", bgEst="rMOM" )
+hmmHM <- mosaicsFitHMM( fitHM, signalModel = "2S", 
+  init="mosaics", init.FDR = 0.05, parallel=TRUE, nCore=8 )
+peakHM <- mosaicsPeakHMM( hmmHM, FDR = 0.05, decoding="posterior",
+  thres=10, parallel=TRUE, nCore=8 )
+
+export( peakHM, type = "txt", filename = "./peakHM.txt" )
+export( peakHM, type = "bed", filename = "./peakHM.bed" )
+export( peakHM, type = "gff", filename = "./peakHM.gff" )
+
+# read-level data is needed to loaded and peak summits need to be identified
+# to export in narrowPeak and broadPeak file formats
+
+peakHM <- extractReads( peakHM,
+  chipFile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878H3k4me3StdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"),
+  chipFileFormat="bam", chipPET=FALSE, chipFragLen=200,
+  controlFile=system.file( file.path("extdata","wgEncodeBroadHistoneGm12878ControlStdAlnRep1_chr22_sorted.bam"), package="mosaicsExample"), 
+  controlFileFormat="bam", controlPET=FALSE, controlFragLen=200, parallel=TRUE, nCore=8 )
+peakHM
+
+peakHM <- findSummit( peakHM, parallel=TRUE, nCore=8 )
+peakHM <- adjustBoundary( peakHM, parallel=TRUE, nCore=8 )
+peakHM <- filterPeak( peakHM, parallel=TRUE, nCore=8 )
+export( peakHM, type = "narrowPeak", filename = "./peakHM.narrowPeak" )
+export( peakHM, type = "broadPeak", filename = "./peakHM.broadPeak" )
 }
 }
 \keyword{models}
