@@ -138,3 +138,11 @@ setMethod(
     }
 )
 
+setMethod(
+    f="seqDepth",
+    signature="MosaicsHMM",
+    definition=function( object ) {
+      return(object@seqDepth)
+    }
+)
+

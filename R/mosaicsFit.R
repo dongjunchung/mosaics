@@ -215,7 +215,8 @@ setMethod(
     
     new( "MosaicsFit",
         mosaicsEst=mosaicsEst, mosaicsParam=mosaicsParam,
-        chrID=binData@chrID, coord=binData@coord, tagCount=binData@tagCount, 
+        chrID=binData@chrID, coord=binData@coord, 
+        tagCount=binData@tagCount, input=binData@input, 
         mappability=binData@mappability, gcContent=binData@gcContent,
         bic1S=fitBIC_1S, bic2S=fitBIC_2S )
 }
@@ -359,6 +360,7 @@ setMethod(
     new( "MosaicsFit",
         mosaicsEst=mosaicsEst, mosaicsParam=mosaicsParam,
         chrID=binData@chrID, coord=binData@coord, 
-        tagCount=binData@tagCount, input=binData@input,
-        bic1S=fitBIC_1S, bic2S=fitBIC_2S )
+        tagCount=binData@tagCount, input=binData@input, 
+        mappability=binData@mappability, gcContent=binData@gcContent,
+        bic1S=fitBIC_1S, bic2S=fitBIC_2S, seqDepth=binData@seqDepth )
 }

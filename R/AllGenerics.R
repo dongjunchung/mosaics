@@ -102,9 +102,9 @@ setGeneric( "empFDR",
     standardGeneric("empFDR")
 )
 
-setGeneric( "coverage",
+setGeneric( "readCoverage",
     function( object, ... )
-    standardGeneric("coverage")
+    standardGeneric("readCoverage")
 )
 
 setGeneric( "read",
@@ -115,4 +115,9 @@ setGeneric( "read",
 setGeneric( "seqDepth",
     function( object, ... )
     standardGeneric("seqDepth")
+)
+
+setGeneric( "postProb",
+    function( object, ... )
+    standardGeneric("postProb")
 )

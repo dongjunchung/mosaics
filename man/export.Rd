@@ -24,7 +24,8 @@ export(object, ...)
 \details{
 TXT file format (\code{type="txt"}) exports peak calling results in the most informative way.
 Columns include chromosome ID, peak start position, peak end position, peak width, 
-average posterior probability, minimum posterior probability, 
+-log10 transformed average posterior probability, -log10 transformed minimum posterior probability, 
+average of -log10 transformed posterior probability,
 average ChIP tag count, maximum ChIP tag count (always), 
 average input tag count, average input tag count scaled by sequencing depth, 
 average log base 2 ratio of ChIP over input tag counts 
@@ -34,7 +35,7 @@ average mappability score, and average GC content score
 \code{type="bed"} and \code{type="gff"} export peak calling results in standard BED and GFF file formats,
 respectively, where score is the average ChIP tag counts in each peak.
 \code{type="narrowPeak"} and \code{type="broadPeak"} export peak calling results in ENCODE narrowPeak and broadPeak file formats,
-respectively, where score, signalValue, and pValue are average log base 2 ratio of ChIP over input tag counts (or average ChIP tag count, if matched control sample is not provided), ChIP signal at the summit, and -log10 transformation of minimum posterior probability, respectively, in each peak.
+respectively, where score, signalValue, pValue, and qValue are average log base 2 ratio of ChIP over input tag counts (or average ChIP tag count, if matched control sample is not provided), ChIP signal at the summit, -log10 transformation of minimum posterior probability (logMinP), and average of -log10 transformed posterior probability (aveLogP), respectively, in each peak.
 If no peak is detected, \code{export} method will not generate any file.
 }
 \references{

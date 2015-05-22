@@ -123,6 +123,10 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
         
       }
       
+      # calculate sequencing depth
+      
+      seqDepth <- countBam(infile)$records
+      
       # file name for genome-wide file
         
       infilename <- basename( infile )
@@ -135,7 +139,10 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
           outfile <- file.path( outfileLoc, paste( infilename,"_fragL",fragLen,"_bin",binSize,".txt", sep="" ) )
         }
         
-        cat( file=outfile )
+        # record sequencing depth
+        
+        #cat( file=outfile )
+        cat( "# sequencing depth: ",seqDepth,"\n", sep="", file=outfile )
       }
       
       # process chromosome by chromosome
@@ -186,8 +193,11 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
           } else {
             outfile <- file.path( outfileLoc, paste( infilename,"_fragL",fragLen,"_bin",binSize,"_",chr,".txt", sep="" ) )
           }
+        
+          # record sequencing depth
           
-          cat( file=outfile )
+          #cat( file=outfile )
+          cat( "# sequencing depth: ",seqDepth,"\n", sep="", file=outfile )
         }
       
         # no scientific notation
@@ -301,6 +311,8 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
             outfileName <- paste(infilename,"_fragL",fragLen,"_bin",binSize,".txt",sep="")
         }
     }
+  
+    seqDepth <- read.table( file=file.path(outfileLoc,outfileName[1]), nrows=1, comment.char="" )[1,4]
     
     cat( "------------------------------------------------------------\n" )
     cat( "Info: processing summary\n" )
@@ -314,5 +326,6 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
     } else {
         cat( "Processed bin-level file: ",outfileName,"\n", sep="" )   
     }
+    cat( "Sequencing depth:",seqDepth, "\n" )
     cat( "------------------------------------------------------------\n" )
 }

@@ -91,3 +91,11 @@ setMethod(
         )            
     }
 )
+
+setMethod(
+    f="seqDepth",
+    signature="MosaicsFit",
+    definition=function( object ) {
+      return(object@seqDepth)
+    }
+)

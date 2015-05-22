@@ -152,7 +152,7 @@ setMethod(
     		}
 	    }
     		
-		# binding bin, posterior probability, & empirical FDR
+		  # binding bin, posterior probability, & empirical FDR
     	
     	chrvec <- rep( names(bd_bin_chr), sapply(bd_bin_chr,length) )
     	coordvec <- unlist(lapply( object@inputdata, function(x) x[,1] ))
@@ -182,11 +182,14 @@ setMethod(
 	        decoding=decoding )
 	    
       tagDataEmpty <- new( "TagData", 
-          read=list(), coverage=list(), seqDepth=c(1,1) )   
+          read=list(), coverage=list() )   
       
       new( "MosaicsPeak",         
-	        peakList=peakList, peakParam=peakParam, 
-	        bdBin=bdBin, postProb=postProb, empFDR=empFDR,
-          tagLoaded=FALSE, tagData=tagDataEmpty )
+	        peakList=peakList, 
+          chrID=object@chrID, coord=object@coord, 
+          tagCount=object@tagCount, input=object@input, 
+          mappability=object@mappability, gcContent=object@gcContent,
+          peakParam=peakParam, bdBin=bdBin, postProb=postProb, empFDR=empFDR,
+          tagLoaded=FALSE, tagData=tagDataEmpty, seqDepth=object@seqDepth )
 	}
 )

@@ -6,7 +6,7 @@
 \alias{plot,MosaicsHMM,missing-method}
 \alias{print,MosaicsHMM-method}
 \alias{show,MosaicsHMM-method}
-
+\alias{seqDepth,MosaicsHMM-method}
 \title{Class "MosaicsHMM" }
 \description{
 This class represents MOSAiCS-HMM model fit.
@@ -18,6 +18,18 @@ Objects can be created by calls of the form \code{new("MosaicsHMM", ...)}.
   \describe{
     \item{\code{HMMfit}:}{Object of class \code{"list"}, 
     	representing the fitted MOSAiCS-HMM model. }
+    \item{\code{chrID}:}{Object of class \code{"character"},
+        a vector of chromosome IDs. }
+    \item{\code{coord}:}{Object of class \code{"numeric"},
+        a vector of genomic coordinates. }
+    \item{\code{tagCount}:}{Object of class \code{"numeric"},
+        a vector of tag counts of ChIP sample. }
+    \item{\code{mappability}:}{Object of class \code{"numeric"},
+        a vector of mappability score. }
+    \item{\code{gcContent}:}{Object of class \code{"numeric"},
+        a vector of GC content score. }
+    \item{\code{input}:}{Object of class \code{"numeric"},
+        a vector of tag counts of matched control sample. }
     \item{\code{inputdata}:}{Object of class \code{"list"}, 
       representing the bin-level data. }
     \item{\code{mosaicsEst}:}{Object of class \code{"MosaicsFitEst"},
@@ -36,6 +48,10 @@ Objects can be created by calls of the form \code{new("MosaicsHMM", ...)}.
     		representing the BIC value of MOSAiCS fit. }
     \item{\code{bicMosaicsHMM}:}{Object of class \code{"numeric"}, 
     		representing the BIC value of MOSAiCS-HMM fit. }
+    \item{\code{seqDepth}:}{Object of class \code{"numeric"}, 
+        a vector of sequencing depth of length 2, where the first and second elements
+        correpond to sequencing depths of ChIP and control samples, respectively.
+        If there is not control sample, the second element is set to NA.}
   }
 }
 \section{Methods}{
@@ -50,7 +66,8 @@ Objects can be created by calls of the form \code{new("MosaicsHMM", ...)}.
     \item{print}{\code{signature(x = "MosaicsHMM")}: 
         (not supported yet) }
     \item{show}{\code{signature(object = "MosaicsHMM")}: provide brief summary of the object. }
-     }
+    \item{seqDepth}{\code{signature(object = "MosaicsHMM")}: provide a vector of sequencing depth. }
+  }
 }
 \references{
 Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Keles (2011), 

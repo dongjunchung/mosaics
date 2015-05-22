@@ -1,6 +1,5 @@
 useDynLib(mosaics)
 exportPattern("^[[:alpha:]]+")
-importFrom(Rcpp, evalCpp)
 
 import( methods, graphics, Rcpp, MASS, splines, lattice )
 
@@ -18,6 +17,6 @@ export( estimates )
 
 export( export )
 
-export( bdBin, empFDR, coverage, read, seqDepth )
+export( bdBin, empFDR, readCoverage, read, seqDepth, postProb )
 
 export( chrID, coord, tagCount, input, mappability, gcContent )

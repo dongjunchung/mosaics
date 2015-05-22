@@ -56,9 +56,10 @@ setMethod(
         
         # suammry for read-level data
     
-        nFrag <- unlist( lapply( read(object), function(x) length(x$ChIP) ) )
-        sumRead <- sum(nFrag)
-        medNumRead <- median(nFrag)
+        nFrag <- object@tagData@numReads
+        
+        sumRead <- sum(nFrag[,1])
+        medNumRead <- median(nFrag[,1])
         
         cat( "ChIP sample:\n" )
         cat( "\tSequencing depth: ",seqDepth(object)[1],"\n", sep="" )
@@ -66,10 +67,9 @@ setMethod(
         cat( "\tMedian number of reads in each peak: ",medNumRead,"\n", sep="" )
         
         if ( !is.na(seqDepth(object)[2]) ) {
-    
-          nFrag <- unlist( lapply( read(object), function(x) length(x$Input) ) )
-          sumRead <- sum(nFrag)
-          medNumRead <- median(nFrag)
+          
+          sumRead <- sum(nFrag[,2])
+          medNumRead <- median(nFrag[,2])
             
           cat( "Matched control sample:\n" )
           cat( "\tSequencing depth: ",seqDepth(object)[2],"\n", sep="" )
@@ -158,13 +158,14 @@ setMethod(
       
       if ( type == "narrowPeak" | type == "broadPeak" ) {
         if ( object@tagLoaded == TRUE ) {
-          summitSignal <- sapply( object@tagData@coverage, function(x) {
-            if ( !is.na(x$ChIP[1,1]) ) {
-              return( max(x$ChIP[,2]) )
-            } else {
-              return(0)
-            }
-          } )
+          #summitSignal <- sapply( object@tagData@coverage, function(x) {
+          #  if ( !is.na(x$ChIP[1,1]) ) {
+          #    return( max(x$ChIP[,2]) )
+          #  } else {
+          #    return(0)
+          #  }
+          #} )
+          summitSignal <- print(object)$summitSignal
         } else {
           stop( "No read-level data provided. Please run extractReads() first!" )
         }
@@ -233,26 +234,27 @@ setMethod(
       # profile plots
       
       for ( j in peakNum ) {
-        if ( !is.na( x@tagData@coverage[[j]]$ChIP[ 1, 1 ] ) ) {
+        if ( !is.na( x@tagData@coverage[[j]]$ChIP[[1]] ) ) {
           
           # ChIP track
           
-          plot( x@tagData@coverage[[j]]$ChIP[,1], x@tagData@coverage[[j]]$ChIP[,2], 
+          xvar <- (x@tagData@coverage[[j]]$ChIP[[1]]):(x@tagData@coverage[[j]]$ChIP[[2]])
+          yvar <- inverse.rle(x@tagData@coverage[[j]]$ChIP[[3]])
+          
+          plot( xvar, yvar, 
             type="l", lwd=2, col="black",
             xlab="Genomic coordinates", ylab="Read count",
             main=names(x@tagData@coverage)[j] )
           
           # input track
           
-          if ( !is.na( x@tagData@coverage[[j]]$Input[ 1, 1 ] ) ) {
-            normC <- x@tagData@seqDepth[1] / x@tagData@seqDepth[2]
+          if ( !is.na( x@tagData@coverage[[j]]$Input[[1]] ) ) {
+            normC <- seqDepth(x)[1] / seqDepth(x)[2]
+            xvar <- (x@tagData@coverage[[j]]$Input[[1]]):(x@tagData@coverage[[j]]$Input[[2]])
+            yvar <- inverse.rle(x@tagData@coverage[[j]]$Input[[3]])
             
-            lines( x@tagData@coverage[[j]]$Input[ , 1 ], 
-              x@tagData@coverage[[j]]$Input[ , 2 ] * normC, 
-              col = "gray", lwd = 2 )
-            lines( x@tagData@coverage[[j]]$Input[ , 1 ], 
-              x@tagData@coverage[[j]]$Input[, 2], 
-              col = "pink", lwd = 2 )
+            lines( xvar, yvar * normC, col = "gray", lwd = 2 )
+            lines( xvar, yvar, col = "pink", lwd = 2 )
             
             if ( colnames(peakList)[ ncol(peakList) ] == "summit" ) {
               legend( "topright", lwd=rep( 2, 5 ), lty=c( 1, 1, 1, 2, 2 ),
@@ -315,11 +317,28 @@ setMethod(
 )
 
 setMethod(
-    f="coverage",
+    f="readCoverage",
     signature="MosaicsPeak",
     definition=function( object ) {
       if ( object@tagLoaded == TRUE ) {  
-        return(object@tagData@coverage)
+        coverage <- lapply( object@tagData@coverage, function(x) {
+          outmat <- vector( "list", 2 )
+          if ( !is.na(x$ChIP[[1]]) ) {
+            outmat[[1]] <- cbind( (x$ChIP[[1]]):(x$ChIP[[2]]), inverse.rle(x$ChIP[[3]]) )
+          } else {
+            outmat[[1]] <- as.matrix(NA)
+          }
+          if ( !is.na(x$Input[[1]]) ) {
+            outmat[[2]] <- cbind( (x$Input[[1]]):(x$Input[[2]]), inverse.rle(x$Input[[3]]) )
+          } else {
+            outmat[[2]] <- as.matrix(NA)
+          }
+          names(outmat) <- c( "ChIP", "Input" )
+          return(outmat)
+        } )
+        names(coverage) <- names(object@tagData@coverage)
+        
+        return(coverage)
       } else {
         stop( "Please run extractReads() first!" )
       }
@@ -330,7 +349,7 @@ setMethod(
     f="read",
     signature="MosaicsPeak",
     definition=function( object ) {
-      if ( object@tagLoaded == TRUE ) {  
+      if ( object@tagLoaded == TRUE & object@tagData@keepReads == TRUE ) {  
         return(object@tagData@read)
       } else {
         stop( "Please run extractReads() first!" )
@@ -339,13 +358,56 @@ setMethod(
 )
 
 setMethod(
-    f="seqDepth",
+    f="postProb",
     signature="MosaicsPeak",
-    definition=function( object ) {
-      if ( object@tagLoaded == TRUE ) {  
-        return(object@tagData@seqDepth)
+    definition=function( object, peakRegion=NULL, summaryStat="aveLogP", parallel=FALSE, nCore=8 ) {
+      
+      # check correctness of arguments
+      
+      if ( !is.null(peakRegion) ) {
+        if ( summaryStat != "logMinP" & summaryStat != "aveLogP" & summaryStat != "medianLogP" &
+        summaryStat != "sumLogP" & summaryStat != "logAveP" &
+        summaryStat != "logMedianP") {
+          stop( "Invalid 'summaryStat' argument! Choose among 'logMinP','aveLogP','medianLogP','sumLogP','logAveP', and 'logMedianP'!" )
+        }
+      }
+      
+      # process & return posterior probabilities
+      
+      if ( is.null(peakRegion) ) {
+        message( "Info: Peak regions of interest are not specified." )
+        message( "Info: Posterior probabilities of all the bins across genome are provided." )
+        
+        return(object@postProb)
       } else {
-        stop( "Please run extractReads() first!" )
+        message( "Info: Peak regions of interest are provided." )
+        message( "Info: Posterior probabilities in each peak region is summarized using ",summaryStat,"." )
+        
+        ppFinal <- .extractPostProb( object@postProb, 
+          peakRegion=peakRegion, summaryStat=summaryStat, parallel=parallel, nCore=nCore )
+        
+        return(ppFinal)
       }
     }
 )
+
+#setMethod(
+#    f="seqDepth",
+#    signature="MosaicsPeak",
+#    definition=function( object ) {
+#      if ( object@tagLoaded == TRUE ) {  
+#        return(object@tagData@seqDepth)
+#      } else {
+#        stop( "Please run extractReads() first!" )
+#      }
+#    }
+#)
+
+setMethod(
+    f="seqDepth",
+    signature="MosaicsPeak",
+    definition=function( object ) {
+      return(object@seqDepth)
+    }
+)
+

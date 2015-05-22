@@ -1,4 +1,60 @@
 
+Changes in version 2.9.7:
+
+BUG FIXES
+
+    o mosaicsPeak(): fix the error that chrID is missing.
+	
+	
+Changes in version 2.9.6:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+	
+	o export(): aveLogP is report as column 9 for 'narrowPeak' and 'broadPeak' file formats.
+	
+
+Changes in version 2.9.5:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+	
+	o extractReads(): Users can now choose whether to keep read-level data with the argument 'keepReads'.
+	
+	o Object sizes are significantly decreased for the output of extractReads(), findSummit(), adjustBoundary(), and filterPeak().
+	
+	o MosaicsPeak class definition is modified to reflect the changes above.
+	
+	o In the peak lists, now, logMinP and logAveP (i.e., -log10 transformation of minP and aveP, respectively) are reported instead of minP and aveP, respectively.
+	
+	o show() method becomes significantly faster.
+
+	
+Changes in version 2.9.4:
+
+SIGNIFICANT USER-VISIBLE CHANGES
+	
+	o Peak list now incorporates mean(-log10(PP)), summitSignal, and summit.
+	
+	o In the peak list, the counts of control samples and the log ratio of ChIP over control counts are adjusted by the ratio of sequencing depth, instead of the ratio of sum of ChIP and control counts.
+	
+	o postProb(): Return posterior probabilities for arbitrary peak regions.
+
+    o export() becomes significantly faster.
+
+    o construtBins(): calculate sequencing depth and keep this information in the first line (commented) of bin-level files.
+	
+	o seqDepth(): returns sequencing depth information, which can be applied to all of BinData, MosaicsFit, MosaicsHMM, MosaicsPeak class objects.
+	
+	o Name of method coverage() is changed to readCoverage().
+
+BUG FIXES
+
+    o findSummit() & adjustBoundary(): fix the error that an average point of multiple apart summit ties is reported as a summit. Now, the first summit block is chosen first and then an average point of the first summit block is reported as a summit. Also, fix some minor numerical issues regarding the calculation of summit locations.
+	
+	o filterPeak(): fix the error that the improvement of ChIP over control samples is set to zero when there is no control signal at the position. Now, in this case, control signal is set to zero.
+	
+	o adjustBoundary(): fix the error "multiple methods tables found for ‘coverage’" in R CMD check.
+	
+	
 Changes in version 2.9.3:
 
 SIGNIFICANT USER-VISIBLE CHANGES

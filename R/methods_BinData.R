@@ -324,3 +324,11 @@ setMethod(
         }   
     }
 )
+
+setMethod(
+    f="seqDepth",
+    signature="BinData",
+    definition=function( object ) {
+      return(object@seqDepth)
+    }
+)

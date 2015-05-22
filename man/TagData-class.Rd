@@ -14,10 +14,12 @@ Objects can be created by calls of the form \code{new("TagData", ...)}.
   \describe{
     \item{\code{coverage}:}{Object of class \code{"list"}, 
         a list of read coverage, where each element is a list including ChIP and matched control samples. }
+    \item{\code{numReads}:}{Object of class \code{"numeric"}, 
+        a matrix of number of reads in peak regions, where rows correspond to peak regions and columns correspond to ChIP and matched control samples. }
     \item{\code{read}:}{Object of class \code{"list"}, 
         a list of read-level data, where each element is a list including ChIP and matched control samples. }
-    \item{\code{seqDepth}:}{Object of class \code{"numeric"}, 
-        a vector of sequencing depth, where two elements correspond to ChIP and matched control samples. }
+    \item{\code{keepReads}:}{Object of class \code{"logical"}, 
+        representing whether to keep read-level data. }
   }
 }
 \references{

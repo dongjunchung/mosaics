@@ -56,19 +56,22 @@ setMethod(
             OS = {
                 dataSet <- list( chrID=object@chrID, coord=object@coord, Y=object@tagCount,
                     M=object@mappability, GC=object@gcContent )
+                nRatio <- 1
             },
             TS = {
                 dataSet <- list( chrID=object@chrID, coord=object@coord, Y=object@tagCount,
                     X=object@input, M=object@mappability, GC=object@gcContent )
+                nRatio <- object@seqDepth[1] / object@seqDepth[2]
             },
             IO = {
                 dataSet <- list( chrID=object@chrID, coord=object@coord, Y=object@tagCount, 
                     X=object@input )
+                nRatio <- object@seqDepth[1] / object@seqDepth[2]
             }        
         )
         fitPeak <- .peakCall( postProb=fitPH, dataSet=dataSet,
             FDR=FDR, binsize=binsize, maxgap=maxgap, minsize=minsize, thres=thres, 
-            analysisType=analysisType )
+            analysisType=analysisType, nRatio=nRatio )
         peakSet <- fitPeak$peakSet
         
         #rm( fitPH, dataSet )
@@ -96,11 +99,14 @@ setMethod(
         colnames(postProb) <- c( "chrID", "coord", "PostProb" )
       
         tagDataEmpty <- new( "TagData", 
-            read=list(), coverage=list(), seqDepth=c(1,1) )   
+            read=list(), coverage=list() )   
         
         new( "MosaicsPeak",         
-            peakList=peakList, peakParam=peakParam, 
-            bdBin=fitPeak$bdBin, postProb=postProb, empFDR=fitPeak$empFDR,
-            tagLoaded=FALSE, tagData=tagDataEmpty )
+            peakList=peakList, 
+            chrID=object@chrID, coord=object@coord, 
+            tagCount=object@tagCount, input=object@input, 
+            mappability=object@mappability, gcContent=object@gcContent,
+            peakParam=peakParam, bdBin=fitPeak$bdBin, postProb=postProb, empFDR=fitPeak$empFDR,
+            tagLoaded=FALSE, tagData=tagDataEmpty, seqDepth=object@seqDepth )
     }
 )

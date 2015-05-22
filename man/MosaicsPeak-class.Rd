@@ -8,14 +8,15 @@
 \alias{print,MosaicsPeak-method}
 \alias{plot,MosaicsPeak,missing-method}
 \alias{show,MosaicsPeak-method}
-\alias{coverage,MosaicsPeak-method}
+\alias{readCoverage,MosaicsPeak-method}
 \alias{read,MosaicsPeak-method}
 \alias{seqDepth,MosaicsPeak-method}
+\alias{postProb,MosaicsPeak-method}
 \alias{bdBin}
 \alias{empFDR}
-\alias{coverage}
+\alias{readCoverage}
 \alias{read}
-\alias{seqDepth}
+\alias{postProb}
 
 \title{Class "MosaicsPeak" }
 \description{
@@ -27,6 +28,18 @@ Objects can be created by calls of the form \code{new("MosaicsPeak", ...)}.
 \section{Slots}{
   \describe{
     \item{\code{peakList}:}{Object of class \code{"data.frame"}, representing peak list. }
+    \item{\code{chrID}:}{Object of class \code{"character"},
+        a vector of chromosome IDs. }
+    \item{\code{coord}:}{Object of class \code{"numeric"},
+        a vector of genomic coordinates. }
+    \item{\code{tagCount}:}{Object of class \code{"numeric"},
+        a vector of tag counts of ChIP sample. }
+    \item{\code{mappability}:}{Object of class \code{"numeric"},
+        a vector of mappability score. }
+    \item{\code{gcContent}:}{Object of class \code{"numeric"},
+        a vector of GC content score. }
+    \item{\code{input}:}{Object of class \code{"numeric"},
+        a vector of tag counts of matched control sample. }
     \item{\code{peakParam}:}{Object of class \code{"MosaicsPeakParam"},
         representing parameters for peak calling. }
     \item{\code{bdBin}:}{Object of class \code{"numeric"}, 
@@ -39,6 +52,10 @@ Objects can be created by calls of the form \code{new("MosaicsPeak", ...)}.
     		representing whether read-level data is loaded. }
     \item{\code{tagData}:}{Object of class \code{"TagData"}, 
     		representing read-level data. }
+    \item{\code{seqDepth}:}{Object of class \code{"numeric"}, 
+        a vector of sequencing depth of length 2, where the first and second elements
+        correpond to sequencing depths of ChIP and control samples, respectively.
+        If there is not control sample, the second element is set to NA.}
   }
 }
 \section{Methods}{
@@ -57,16 +74,18 @@ Objects can be created by calls of the form \code{new("MosaicsPeak", ...)}.
     \item{empFDR}{\code{signature(object = "MosaicsPeak")}: return estimated empirical false discovery rate. }
     \item{bdBin}{\code{signature(object = "MosaicsPeak")}: return a vector of bin-level binary indicator of peak calling,
       where each element is 1 if the corresponding bin belongs to a peak and zero otherwise. }
-	 \item{coverage}{\code{signature(object = "MosaicsPeak")}: export a list of coverage matrices of ChIP and matched control samples, where each matrix consists of two columns, genomic coordinates and read count.
+	 \item{readCoverage}{\code{signature(object = "MosaicsPeak")}: export a list of coverage matrices of ChIP and matched control samples, where each matrix consists of two columns, genomic coordinates and read count.
 	 Each element of this list is a list of length 2, which are matrices for each of ChIP and matched control samples.
    Elements of this list are sorted to match the rows of peak list.
-	 Users can use \code{coverage} method only after \code{extractReads} method is applied to the \code{MosaicsPeak} object. }
+	 Users can use \code{readCoverage} method only after \code{extractReads} method is applied to the \code{MosaicsPeak} object. }
   \item{read}{\code{signature(object = "MosaicsPeak")}: return a list of read-level data of ChIP and matched control samples, where each element is \code{GenomicRanges} class.
 	 Each element of this list is a list of length 2, which are \code{GenomicRanges} objects for each of ChIP and matched control samples.
 	 Elements of this list are sorted to match the rows of peak list.
-	 Users can use \code{coverage} method only after \code{extractReads} method is applied to the \code{MosaicsPeak} object. }
+	 Users can use \code{read} method only after \code{extractReads} method is applied to the \code{MosaicsPeak} object. }
 	 \item{seqDepth}{\code{signature(object = "MosaicsPeak")}: return a vector of sequencing depth, where the first and second elements are for ChIP and matched control sample, respectively. If matched control sample is not provided, the second element is NA.
-	 Users can use \code{coverage} method only after \code{extractReads} method is applied to the \code{MosaicsPeak} object. }
+	 Users can use \code{seqDepth} method only after \code{extractReads} method is applied to the \code{MosaicsPeak} object. }
+   \item{postProb}{\code{signature( object = "MosaicsPeak", peakRegion=NULL, summaryStat="aveLogP", parallel=FALSE, nCore=8 )}: return a data frame of peak-level posterior probabilities of being background (PP) for arbitrary peak regions, where the columns are chromosome ID, peak start position, and peak end position, and summary of PP. Peak regions of interest can be specified in \code{peakRegion} argument and a data frame of three columns (chromosome ID, peak start position, and peak end position) is expected. If \code{peakRegion} is not provided, a data frame of bin-level PP is provided, where columns are chromosome ID, genomic coordinate, and PP. Summary statistics can be chosen among \code{"aveLogP"} (average of -log10 transformed PP; default), \code{"medianLogP"} (median of -log10 transformed PP), \code{"sumLogP"} (sum of -log10 transformed PP), \code{"logMinP"} (-log10 transformation of minimum PP), \code{"logAveP"} (-log10 transformation of average PP), and \code{"logMedianP"} (-log10 transformation of median PP). Multiple CPUs can be used for parallel computing using \code{"parallel"} package if \code{parallel=TRUE}, where the number of cores to be used can be specified using \code{nCore}. }
+    \item{seqDepth}{\code{signature(object = "MosaicsPeak")}: provide a vector of sequencing depth. }
 }
 }
 \references{

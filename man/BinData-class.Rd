@@ -12,12 +12,14 @@
 \alias{print,BinData-method}
 \alias{show,BinData-method}
 \alias{tagCount,BinData-method}
+\alias{seqDepth,BinData-method}
 \alias{chrID}
 \alias{coord}
 \alias{gcContent}
 \alias{input}
 \alias{mappability}
 \alias{tagCount}
+\alias{seqDepth}
 
 \title{Class "BinData" }
 \description{
@@ -44,6 +46,10 @@ Objects can be created by calls of the form \code{new("BinData", ...)}.
         indicating how reads were processed. Possible values are 
         "unique" (only uniquely aligned reads were retained)
         and "multi" (reads aligned to multiple locations were also retained). }
+    \item{\code{seqDepth}:}{Object of class \code{"numeric"}, 
+        a vector of sequencing depth of length 2, where the first and second elements
+        correpond to sequencing depths of ChIP and control samples, respectively.
+        If there is not control sample, the second element is set to NA.}
   }
 }
 \section{Methods}{
@@ -68,6 +74,7 @@ Objects can be created by calls of the form \code{new("BinData", ...)}.
     \item{input}{\code{signature(object = "BinData")}: provide a vector of tag count of input sample. }
     \item{mappability}{\code{signature(object = "BinData")}: provide a vector of mappability score. }
     \item{gcContent}{\code{signature(object = "BinData")}: provide a vector of GC content score. }
+    \item{seqDepth}{\code{signature(object = "BinData")}: provide a vector of sequencing depth. }
      }
 }
 \references{

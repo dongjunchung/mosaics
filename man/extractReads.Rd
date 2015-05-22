@@ -12,7 +12,7 @@ extractReads( object, ... )
 \S4method{extractReads}{MosaicsPeak}( object, chipFile=NULL, chipFileFormat=NULL,
     chipPET=FALSE, chipFragLen=200,
     controlFile=NULL, controlFileFormat=NULL, 
-    controlPET=FALSE, controlFragLen=200,
+    controlPET=FALSE, controlFragLen=200, keepReads=FALSE,
     parallel=FALSE, nCore=8, tempDir=NULL, perl="perl" )
 }
 %- maybe also 'usage' for other objects documented here.
@@ -65,7 +65,10 @@ extractReads( object, ... )
     Average fragment length of matched control sample. Default is 200.
     This argument is ignored if \code{controlPET=TRUE}.
 }
-    \item{parallel}{Utilize multiple CPUs for parallel computing 
+  \item{keepReads}{
+    Keep read-level data? Default is \code{FALSE} (do not keep read-level data).
+}
+  \item{parallel}{Utilize multiple CPUs for parallel computing 
         using \code{"parallel"} package?
         Possible values are \code{TRUE} (utilize multiple CPUs) 
         or \code{FALSE} (do not utilize multiple CPUs).

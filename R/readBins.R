@@ -34,30 +34,30 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
     
     chipFileName <- fileName[ type=="chip" ]
     chip <- read.table( chipFileName, header=FALSE, sep='\t', 
-        colClasses=c("character","numeric","numeric"), comment.char="",
+        colClasses=c("character","numeric","numeric"), comment.char="#",
         stringsAsFactors=FALSE, check.names=FALSE )
     
     if ( existM )
     {
         mapScoreFileName <- fileName[ type=="M" ]
         mapScore <- read.table( mapScoreFileName, header=FALSE, 
-            stringsAsFactors=FALSE, check.names=FALSE, comment.char="" )
+            stringsAsFactors=FALSE, check.names=FALSE, comment.char="#" )
     }
     if ( existGC ) {    
         gcScoreFileName <- fileName[ type=="GC" ]
         gcScore <- read.table( gcScoreFileName, header=FALSE, 
-            stringsAsFactors=FALSE, check.names=FALSE, comment.char="" )
+            stringsAsFactors=FALSE, check.names=FALSE, comment.char="#" )
     }   
     if ( existN ) {
         nNucFileName <- fileName[ type=="N" ]
         nNuc <- read.table( nNucFileName, header=FALSE, 
-            stringsAsFactors=FALSE, check.names=FALSE, comment.char="" )
+            stringsAsFactors=FALSE, check.names=FALSE, comment.char="#" )
     }    
     if ( existInput )
     {
         inputFileName <- fileName[ type=="input" ]
         input <- read.table( inputFileName, header=FALSE, sep='\t', 
-            colClasses=c("character","numeric","numeric"), comment.char="",
+            colClasses=c("character","numeric","numeric"), comment.char="#",
             stringsAsFactors=FALSE, check.names=FALSE )
     }
     
@@ -71,6 +71,17 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
             warning( "remember that you will get errors in 'mosaicsFit' method!" )
         }
     } 
+  
+    # extract sequencing depth
+  
+    seqDepth <- rep( NA, 2 )
+    seqDepth[1] <- read.table( file=chipFileName, nrows=1, comment.char="" )[1,4]
+    if ( existInput ) {
+      seqDepth[2] <- read.table( file=inputFileName, nrows=1, comment.char="" )[1,4]
+    } else {
+      seqDepth[2] <- NA
+    }
+    
     
     # process bin-level data
     
@@ -183,7 +194,7 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
                     gc()   
     
                     outBin <- new( "BinData", chrID=chrID, coord=coord, tagCount=Y, input=X, 
-                        mappability=M, gcContent=GC, dataType=dataType )
+                        mappability=M, gcContent=GC, dataType=dataType, seqDepth=seqDepth )
                         
                     rm( chrID, coord, Y, X, M, GC )
                     gc()    
@@ -203,7 +214,7 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
                     chrID <- rep( chip[1,1], length(out$coord) )
                     outBin <- new( "BinData", chrID=chrID, 
                         coord=out$coord, tagCount=out$Y, input=out$X, 
-                        mappability=out$M, gcContent=out$GC, dataType=dataType )  
+                        mappability=out$M, gcContent=out$GC, dataType=dataType, seqDepth=seqDepth )  
                         
                     rm( chrID, out )
                     gc()
@@ -302,7 +313,7 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
                     gc()       
     
                     outBin <- new( "BinData", chrID=chrID, coord=coord, tagCount=Y, input=X, 
-                        dataType=dataType )
+                        dataType=dataType, seqDepth=seqDepth )
                     
                     rm( chrID, coord, Y, X )
                     gc()    
@@ -320,7 +331,7 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
     
                     chrID <- rep( chip[1,1], length(out$coord) ) 
                     outBin <- new( "BinData", chrID=chrID, coord=out$coord, tagCount=out$Y, 
-                        input=out$X, dataType=dataType ) 
+                        input=out$X, dataType=dataType, seqDepth=seqDepth ) 
                     
                     rm( chrID, out )
                     gc() 
@@ -414,7 +425,7 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
                 gc()               
 
                 outBin <- new( "BinData", chrID=chrID, coord=coord, tagCount=Y, input=X, 
-                    dataType=dataType )    
+                    dataType=dataType, seqDepth=seqDepth )    
                 
                 rm( chrID, coord, Y, X )
                 gc()
@@ -425,7 +436,7 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
                 
                 chrID <- rep( chip[1,1], length(out$coord) )      
                 outBin <- new( "BinData", chrID=chrID, coord=out$coord, tagCount=out$Y, 
-                    input=out$X, dataType=dataType )  
+                    input=out$X, dataType=dataType, seqDepth=seqDepth )  
                 
                 rm( chrID, out )
                 gc() 
@@ -533,7 +544,7 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
                     gc()
     
                     outBin <- new( "BinData", chrID=chrID, coord=coord, tagCount=Y, 
-                        mappability=M, gcContent=GC, dataType=dataType )              
+                        mappability=M, gcContent=GC, dataType=dataType, seqDepth=seqDepth )              
                     
                     rm( chrID, coord, Y, M, GC )
                     gc()
@@ -552,7 +563,7 @@ readBins <- function( type=c("chip","input"), fileName=NULL,
                         
                     chrID <- rep( chip[1,1], length(out$coord) )    
                     outBin <- new( "BinData", chrID=chrID, coord=out$coord, tagCount=out$Y, 
-                        mappability=out$M, gcContent=out$GC, dataType=dataType )   
+                        mappability=out$M, gcContent=out$GC, dataType=dataType, seqDepth=seqDepth )   
                     
                     rm( chrID, out )
                     gc()

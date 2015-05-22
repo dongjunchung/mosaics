@@ -5,7 +5,7 @@
 \alias{plot,MosaicsFit,ANY-method}
 \alias{print,MosaicsFit-method}
 \alias{show,MosaicsFit-method}
-
+\alias{seqDepth,MosaicsFit-method}
 \title{Class "MosaicsFit" }
 \description{
 This class represents MOSAiCS model fit.
@@ -35,6 +35,10 @@ Objects can be created by calls of the form \code{new("MosaicsFit", ...)}.
         Bayesian Information Criterion (BIC) value of one-signal-component model. }
     \item{\code{bic2S}:}{Object of class \code{"numeric"},
         Bayesian Information Criterion (BIC) value of two-signal-component model. }
+    \item{\code{seqDepth}:}{Object of class \code{"numeric"}, 
+        a vector of sequencing depth of length 2, where the first and second elements
+        correpond to sequencing depths of ChIP and control samples, respectively.
+        If there is not control sample, the second element is set to NA.}
   }
 }
 \section{Methods}{
@@ -49,7 +53,8 @@ Objects can be created by calls of the form \code{new("MosaicsFit", ...)}.
         (not supported yet) }
     \item{show}{\code{signature(object = "MosaicsFit")}:
         provide brief summary of the object. }
-     }
+    \item{seqDepth}{\code{signature(object = "MosaicsFit")}: provide a vector of sequencing depth. }
+  }
 }
 \references{
 Kuan, PF, D Chung, G Pan, JA Thomson, R Stewart, and S Keles (2011), 

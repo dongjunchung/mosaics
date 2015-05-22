@@ -1,6 +1,6 @@
 
 .trimExtend <- function( chipExist, inputProvided, inputExist,
-  chrID, peakStart, peakEnd, summit, stackedFragment, normC, 
+  chrID, peakStart, peakEnd, summitSignal, summit, stackedFragment, normC, 
   extendFromSummit, minRead, trimMinRead1, trimFC1, extendMinRead1, extendFC1,
   trimMinRead2, trimFC2, extendMinRead2, extendFC2 ) {
   
@@ -13,9 +13,14 @@
     
     # load data
     
-    profileChip <- stackedFragment$ChIP
-    if ( inputProvided ) {
-      profileInput <- stackedFragment$Input
+    xvar <- (stackedFragment$ChIP[[1]]):(stackedFragment$ChIP[[2]])
+    yvar <- inverse.rle(stackedFragment$ChIP[[3]])    
+    profileChip <- cbind( xvar, yvar )
+    
+    if ( inputProvided & inputExist & !is.na(stackedFragment$Input[[1]]) ) {
+      xvar <- (stackedFragment$Input[[1]]):(stackedFragment$Input[[2]])
+      yvar <- inverse.rle(stackedFragment$Input[[3]])    
+      profileInput <- cbind( xvar, yvar )
     }
     
     # check summit, not restricted to peak region
@@ -23,10 +28,16 @@
     #summitOrg <- summit
     locSummit <- which( profileChip[,2] == max( profileChip[,2] ) )
     if ( length(locSummit) > 1 ) {
-      locSummit <- round(mean(locSummit))
+      firstPeak <- which.max(profileChip[,2])
+      firstBreak <- locSummit[ which( diff(locSummit) != 1 )[1] ]
+      if ( is.na(firstBreak) ) {
+        firstBreak <- max(locSummit)
+      }
+      firstBlock <- firstPeak:firstBreak
+      locSummit <- floor(mean(firstBlock))
     }
     summitNew <- profileChip[ locSummit, 1 ]
-    if ( inputProvided ) {
+    if ( inputProvided & inputExist & !is.na(stackedFragment$Input[[1]]) ) {
       summitCoordInput <- match( summitNew, profileInput[,1] )
     }
     
@@ -58,12 +69,18 @@
     
     locSummitRegion <- which( profileChipRegion[,2] == max( profileChipRegion[,2] ) )
     if ( length(locSummitRegion) > 1 ) {
-      locSummitRegion <- round(mean(locSummitRegion))
+      firstPeak <- which.max(profileChipRegion[,2])
+      firstBreak <- locSummitRegion[ which( diff(locSummitRegion) != 1 )[1] ]
+      if ( is.na(firstBreak) ) {
+        firstBreak <- max(locSummitRegion)
+      }
+      firstBlock <- firstPeak:firstBreak
+      locSummitRegion <- floor(mean(firstBlock))
     }
     
     # calculate improvement of ChIP over input
     
-    if ( inputExist ) {
+    if ( inputProvided & inputExist & !is.na(stackedFragment$Input[[1]]) ) {
             
       profileCoordInput <- match( profileChip[,1], profileInput[,1] )
       profileInput <- cbind( profileChip[,1], profileInput[ profileCoordInput, 2 ] )
@@ -191,11 +208,13 @@
     
     # If the start and stop still do not cover the summit, extend them
     
-    if ( peakStartNew > summitNew ) {
-      peakStartNew <- max( summitNew - extendFromSummit, 0, peakStartNew )
+    if ( peakStartNew >= summitNew ) {
+      #peakStartNew <- max( summitNew - extendFromSummit, 0, peakStartNew )
+      peakStartNew <- max( min( summitNew - extendFromSummit, peakStartNew ), 0 )
     }
-    if ( peakEndNew < summitNew ) { 
-      peakEndNew <- min( summitNew + extendFromSummit, peakEndNew )
+    if ( peakEndNew <= summitNew ) { 
+      #peakEndNew <- min( summitNew + extendFromSummit, peakEndNew )
+      peakEndNew <- max( summitNew + extendFromSummit, peakEndNew )
     }
     
     # update peak summit, while restricted to "new" peak region
@@ -213,8 +232,16 @@
     profileChipRegion <- profileChip[ locStartNew:locEndNew, , drop=FALSE ]    
     locSummitRegion <- which( profileChipRegion[,2] == max( profileChipRegion[,2] ) )
     if ( length(locSummitRegion) > 1 ) {
-      locSummitRegion <- round(mean(locSummitRegion))
+      firstPeak <- which.max(profileChipRegion[,2])
+      firstBreak <- locSummitRegion[ which( diff(locSummitRegion) != 1 )[1] ]
+      if ( is.na(firstBreak) ) {
+        firstBreak <- max(locSummitRegion)
+      }
+      firstBlock <- firstPeak:firstBreak
+      locSummitRegion <- floor(mean(firstBlock))
     }
+    
+    summitSignalNew <- profileChipRegion[ locSummitRegion, 2 ]
     summitNew <- profileChipRegion[ locSummitRegion, 1 ]
     
   } else {
@@ -223,10 +250,11 @@
     
     peakStartNew <- peakStart
     peakEndNew <- peakEnd
+    summitSignalNew <- summitSignal
     summitNew <- summit
     
   }
   
-  return( c( peakStartNew, peakEndNew, summitNew ) )
+  return( c( peakStartNew, peakEndNew, summitSignalNew, summitNew ) )
 }
 

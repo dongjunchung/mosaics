@@ -260,31 +260,50 @@
   rm( fragSetOrg )
   gc()
   
+  # calculate number of reads
+  
+  numReads <- sapply( fragSet, length )
+  names(numReads) <- names(fragSet)
+  
+  # calculate coverage
+  
   message( "Info: Calculating coverage..." )    
   
   if ( parallel == TRUE ) {
     stackedFragment <- mclapply( fragSet, function(fragEach) {
+      outmat <- vector( "list", 3 )
+      
       if ( length(fragEach) > 0 ) {
         fragmat <- cbind( start(fragEach), end(fragEach) )
         xvarq <- c( min(fragmat[,1]), max(fragmat[,2]) )
         xvar <- c(xvarq[1]:xvarq[2])
         yvar <- .ff_stack( fragmat[,1], fragmat[,2], xvarq[1], xvarq[2] )  
-        outmat <- cbind( xvar, yvar )
+        #outmat <- cbind( xvar, yvar )
+        outmat[[1]] <- min(xvar)
+        outmat[[2]] <- max(xvar)
+        outmat[[3]] <- rle(yvar)
       } else {
-        outmat <- matrix( NA )
+        #outmat <- matrix( NA )
+        outmat[[1]] <- outmat[[2]] <- outmat[[3]] <- NA
       }
       return( outmat )
     }, mc.cores = nCore )
   } else {
     stackedFragment <- lapply( fragSet, function(fragEach) {
+      outmat <- vector( "list", 3 )
+      
       if ( length(fragEach) > 0 ) {
         fragmat <- cbind( start(fragEach), end(fragEach) )
         xvarq <- c( min(fragmat[,1]), max(fragmat[,2]) )
         xvar <- c(xvarq[1]:xvarq[2])
         yvar <- .ff_stack( fragmat[,1], fragmat[,2], xvarq[1], xvarq[2] )  
-        outmat <- cbind( xvar, yvar )
+        #outmat <- cbind( xvar, yvar )
+        outmat[[1]] <- min(xvar)
+        outmat[[2]] <- max(xvar)
+        outmat[[3]] <- rle(yvar)
       } else {
-        outmat <- matrix( NA )
+        #outmat <- matrix( NA )
+        outmat[[1]] <- outmat[[2]] <- outmat[[3]] <- NA
       }
       return( outmat )
     } )
@@ -297,8 +316,13 @@
   
   # return output
   
-  return(list( 
-    fragSet=fragSet, stackedFragment=stackedFragment, seqDepth=seqDepth ))
+  if ( keepReads == TRUE ) {
+    return(list( 
+      fragSet=fragSet, numReads=numReads, stackedFragment=stackedFragment, seqDepth=seqDepth ))
+  } else {
+    return(list( 
+      fragSet=GRanges(), numReads=numReads, stackedFragment=stackedFragment, seqDepth=seqDepth ))
+  }
 }
 
 # match peak & reads (other file formats)

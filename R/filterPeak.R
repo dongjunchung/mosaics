@@ -32,13 +32,26 @@ setMethod(
     
     if ( parallel == TRUE ) {    
       summitSignalOrg <- mclapply( 1:nrow(peakList), function(j) {
-        if ( !is.na( object@tagData@coverage[[j]]$ChIP[1,1] ) ) {
-          summitSignalChip <- object@tagData@coverage[[j]]$ChIP[ match( summit[j], object@tagData@coverage[[j]]$ChIP[,1] ), 2 ]
+        
+        coverageChIP <- object@tagData@coverage[[j]]$ChIP
+        
+        if ( !is.na( coverageChIP[[1]] ) ) {
+          xvar <- (coverageChIP[[1]]):(coverageChIP[[2]])
+          yvar <- inverse.rle(coverageChIP[[3]])
+          summitSignalChip <- yvar[ match( summit[j], xvar ) ]
         } else {
           summitSignalChip <- 0
         }
-        if ( !is.na( object@tagData@coverage[[j]]$Input[1,1] ) ) {
-          summitSignalInput <- object@tagData@coverage[[j]]$Input[ match( summit[j], object@tagData@coverage[[j]]$Input[,1] ), 2 ]
+        if ( !is.na( object@tagData@coverage[[j]]$Input[[1]] ) ) {
+          
+          coverageInput <- object@tagData@coverage[[j]]$Input
+          
+          xvar <- (coverageInput[[1]]):(coverageInput[[2]])
+          yvar <- inverse.rle(coverageInput[[3]])
+          summitSignalInput <- yvar[ match( summit[j], xvar ) ]
+          if ( is.na(summitSignalInput) ) {
+            summitSignalInput <- 0
+          }
         } else {
           summitSignalInput <- 0
         }
@@ -46,13 +59,26 @@ setMethod(
       }, mc.cores=nCore )
     } else {    
       summitSignalOrg <- lapply( 1:nrow(peakList), function(j) {
-        if ( !is.na( object@tagData@coverage[[j]]$ChIP[1,1] ) ) {
-          summitSignalChip <- object@tagData@coverage[[j]]$ChIP[ match( summit[j], object@tagData@coverage[[j]]$ChIP[,1] ), 2 ]
+        
+        coverageChIP <- object@tagData@coverage[[j]]$ChIP
+        
+        if ( !is.na( object@tagData@coverage[[j]]$ChIP[[1]] ) ) {
+          xvar <- (coverageChIP[[1]]):(coverageChIP[[2]])
+          yvar <- inverse.rle(coverageChIP[[3]])
+          summitSignalChip <- yvar[ match( summit[j], xvar ) ]
         } else {
           summitSignalChip <- 0
         }
-        if ( !is.na( object@tagData@coverage[[j]]$Input[1,1] ) ) {
-          summitSignalInput <- object@tagData@coverage[[j]]$Input[ match( summit[j], object@tagData@coverage[[j]]$Input[,1] ), 2 ]
+        if ( !is.na( object@tagData@coverage[[j]]$Input[[1]] ) ) {
+          
+          coverageInput <- object@tagData@coverage[[j]]$Input
+          
+          xvar <- (coverageInput[[1]]):(coverageInput[[2]])
+          yvar <- inverse.rle(coverageInput[[3]])
+          summitSignalInput <- yvar[ match( summit[j], xvar ) ]
+          if ( is.na(summitSignalInput) ) {
+            summitSignalInput <- 0
+          }
         } else {
           summitSignalInput <- 0
         }
@@ -73,7 +99,8 @@ setMethod(
     improveCI[ is.na(improveCI) ] <- 0
       #NAs only occur when chip is 0.
     
-    numRead <- sapply( read(object), function(x) length(x$ChIP) )
+    #numRead <- sapply( read(object), function(x) length(x$ChIP) )
+    numRead <- object@tagData@numReads[,1]
     
     indRetained1 <- which( summitSignalChip >= summitCut & improveCI >= FC & numRead >= minRead )
     
@@ -89,7 +116,9 @@ setMethod(
     
     object@peakList <- peakList[ indRetained, ]
     object@tagData@coverage <- object@tagData@coverage[ indRetained ]
-    object@tagData@read <- object@tagData@read[ indRetained ]
+    if ( object@tagData@keepReads == TRUE ) {
+      object@tagData@read <- object@tagData@read[ indRetained ]
+    }
     
     # summary
     

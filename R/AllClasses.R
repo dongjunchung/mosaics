@@ -9,7 +9,8 @@ setClass( Class="BinData",
         mappability="numeric",
         gcContent="numeric",
         input="numeric",
-        dataType="character"
+        dataType="character",
+        seqDepth="numeric"
     )
 )
 
@@ -54,7 +55,8 @@ setClass( Class="MosaicsFit",
         gcContent="numeric",
         input="numeric",
         bic1S="numeric",
-        bic2S="numeric"
+        bic2S="numeric",
+        seqDepth="numeric"
     )
 )
 
@@ -78,6 +80,12 @@ setClass( Class="MosaicsHMM",
     representation=representation(
         HMMfit="list",
         mosaicsEst="MosaicsFitEst",
+        chrID="character",
+        coord="numeric",
+        tagCount="numeric",
+        mappability="numeric",
+        gcContent="numeric",
+        input="numeric",
 	    	inputdata="list",
         init="character",
         initPiMat="matrix",
@@ -85,7 +93,8 @@ setClass( Class="MosaicsHMM",
         binsize="numeric",
         nRatio="numeric",
         bicMosaics="numeric",
-        bicMosaicsHMM="numeric"
+        bicMosaicsHMM="numeric",
+        seqDepth="numeric"
     )
 )
 
@@ -94,20 +103,27 @@ setClass( Class="MosaicsHMM",
 setClass( Class="TagData",
   representation=representation(
     coverage="list",
+    numReads="matrix",
     read="list",
-    seqDepth="numeric"
+    keepReads="logical"
   )
 )
-
 
 setClass( Class="MosaicsPeak",
     representation=representation(
         peakList="data.frame",
+        chrID="character",
+        coord="numeric",
+        tagCount="numeric",
+        mappability="numeric",
+        gcContent="numeric",
+        input="numeric",
         peakParam="MosaicsPeakParam",
         bdBin="data.frame",
         postProb="data.frame",
         empFDR="numeric",
         tagLoaded="logical",
-        tagData="TagData"
+        tagData="TagData",
+        seqDepth="numeric"
     )
 )

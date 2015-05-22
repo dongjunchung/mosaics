@@ -60,7 +60,7 @@
 # claim peaks
 
 .peakCall <- function( postProb, dataSet, FDR, binsize=NA, 
-    maxgap=200, minsize=50, thres=10, analysisType )
+    maxgap=200, minsize=50, thres=10, analysisType, nRatio=1 )
 {   
     #library(IRanges)
     
@@ -154,6 +154,7 @@
                 Y_chr <- Y_list[[ chrList[chr] ]]
                 switch( analysisType,
                     OS = {
+                        X_chr <- NA
                         M_chr <- M_list[[ chrList[chr] ]]
                         GC_chr <- GC_list[[ chrList[chr] ]]
                     },
@@ -164,6 +165,8 @@
                     },
                     IO = {
                         X_chr <- X_list[[ chrList[chr] ]]
+                        M_chr <- NA
+                        GC_chr <- NA
                     }
                 ) 
                                 
@@ -212,119 +215,16 @@
                     #print(quantile(peaksize))
                     
                     # calculate additional info
+      
+                    final_peakset_chr <- .annotatePeak( 
+                      peakStart_chr=peak_start, peakStop_chr=peak_stop, 
+                      coord_chr=coord_chr, analysisType=analysisType,
+                      Y_chr=Y_chr, X_chr=X_chr, M_chr=M_chr, GC_chr=GC_chr, 
+                      pp_chr=betapH_chr, nRatio=nRatio )
                     
-                    peak_range <- IRanges( start=peak_start, end=peak_stop )
-                    info_range <- IRanges( start=coord_chr, end=coord_chr )
-                    mm <- as.matrix( findOverlaps( peak_range, info_range ) )
-                    matchlist <- split( mm[,2], mm[,1] )
-                    
-                    switch( analysisType,
-                        OS = {        
-                            # extract info
-                            
-                            peak_info_list <- lapply( matchlist, 
-                                function(x) {
-                                    betapH_i <- betapH_chr[x]
-                                    aveP <- mean(betapH_i)
-                                    minP <- min(betapH_i)
-                                    aveChipCount <- mean(Y_chr[x])
-                                    maxChipCount <- max(Y_chr[x])
-                                    aveM <- mean(M_chr[x])
-                                    aveGC <- mean(GC_chr[x]) 
-                                    return( c( aveP, minP, aveChipCount, maxChipCount, aveM, aveGC ) )
-                                }
-                            )
-                            
-                            peak_info <- matrix( NA, length(peak_start), length(peak_info_list[[1]]) )
-                            for ( pii in 1:length(peak_start) ) {
-                                peak_info[ pii, ] <- peak_info_list[[pii]]
-                            }
-                            
-                            # combine all
-                                    
-                            final_peakset_chr <- data.frame( rep(chrList[chr],length(peak_start)),
-                                peak_start, peak_stop, peaksize, peak_info, 
-                                stringsAsFactors=FALSE )
-                            colnames(final_peakset_chr) <-
-                                c('chrID','peakStart','peakStop','peakSize','aveP','minP',
-                                'aveChipCount','maxChipCount','map','GC')
-                        },
-                        TS = {        
-                            # extract info
-                                    
-                            nRatio <- sum(Y) / sum(X)
-                                # genome-wide sequencing depth adjustment
-                    
-                            peak_info_list <- lapply( matchlist, 
-                                function(x) {
-                                    betapH_i <- betapH_chr[x]
-                                    aveP <- mean(betapH_i)
-                                    minP <- min(betapH_i)
-                                    aveChipCount <- mean(Y_chr[x])
-                                    maxChipCount <- max(Y_chr[x])
-                                    aveInputCount <- mean(X_chr[x])
-                                    aveInputCountScaled <- aveInputCount * nRatio
-                                    aveLog2Ratio <- mean( log2( (Y_chr[x]+1) / (X_chr[x]*nRatio+1) ) )
-                                    aveM <- mean(M_chr[x])
-                                    aveGC <- mean(GC_chr[x]) 
-                                    return( c( aveP, minP, aveChipCount, maxChipCount, 
-                                        aveInputCount, aveInputCountScaled, aveLog2Ratio, aveM, aveGC ) )
-                                }
-                            )
-                            
-                            peak_info <- matrix( NA, length(peak_start), length(peak_info_list[[1]]) )
-                            for ( pii in 1:length(peak_start) ) {
-                                peak_info[ pii, ] <- peak_info_list[[pii]]
-                            }
-                            
-                            # combine all
-                                    
-                            final_peakset_chr <- data.frame( rep(chrList[chr],length(peak_start)),
-                                peak_start, peak_stop, peaksize, peak_info, 
-                                stringsAsFactors=FALSE )
-                            colnames(final_peakset_chr) <-
-                                c('chrID','peakStart','peakStop','peakSize','aveP','minP',
-                                'aveChipCount','maxChipCount',
-                                'aveInputCount','aveInputCountScaled','aveLog2Ratio','map','GC')
-                        },
-                        IO = {        
-                            # extract info
-                            
-                            nRatio <- sum(Y) / sum(X)
-                                # genome-wide sequencing depth adjustment
-                            
-                            peak_info_list <- lapply( matchlist, 
-                                function(x) {
-                                    betapH_i <- betapH_chr[x]
-                                    aveP <- mean(betapH_i)
-                                    minP <- min(betapH_i)
-                                    aveChipCount <- mean(Y_chr[x])
-                                    maxChipCount <- max(Y_chr[x])
-                                    aveInputCount <- mean(X_chr[x])
-                                    aveInputCountScaled <- aveInputCount * nRatio
-                                    aveLog2Ratio <- mean( log2( (Y_chr[x]+1) / (X_chr[x]*nRatio+1) ) )
-                                    return( c( aveP, minP, aveChipCount, maxChipCount, 
-                                        aveInputCount, aveInputCountScaled, aveLog2Ratio ) )
-                                }
-                            )
-                            
-                            peak_info <- matrix( NA, length(peak_start), length(peak_info_list[[1]]) )
-                            for ( pii in 1:length(peak_start) ) {
-                                peak_info[ pii, ] <- peak_info_list[[pii]]
-                            }
-                            
-                            # combine all
-                                    
-                            final_peakset_chr <- data.frame( rep(chrList[chr],length(peak_start)),
-                                peak_start, peak_stop, peaksize, peak_info, 
-                                stringsAsFactors=FALSE )
-                            colnames(final_peakset_chr) <-
-                                c('chrID','peakStart','peakStop','peakSize','aveP','minP',
-                                'aveChipCount','maxChipCount',
-                                'aveInputCount','aveInputCountScaled','aveLog2Ratio')
-                        }
-                    )
-                    
+                    final_peakset_chr <- data.frame( chrList[chr], final_peakset_chr )
+                    colnames(final_peakset_chr)[1] <- "chrID"
+                  
                     final_peakset <- rbind( final_peakset, final_peakset_chr )  
                 }              
             }

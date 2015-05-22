@@ -96,14 +96,16 @@ setMethod(
 	            dataSet <- list( chrID=object@chrID, coord=object@coord, Y=object@tagCount,
 	                X=object@input, M=object@mappability, GC=object@gcContent )
 	                        
-	            nRatio <- sum(object@tagCount) / sum(object@input)
+              nRatio <- object@seqDepth[1] / object@seqDepth[2]
+	            #nRatio <- sum(object@tagCount) / sum(object@input)
 	                # genome-wide sequencing depth adjustment
 	        },
 	        IO = {
 	            dataSet <- list( chrID=object@chrID, coord=object@coord, Y=object@tagCount, 
 	                X=object@input )
 	                        
-	            nRatio <- sum(object@tagCount) / sum(object@input)
+	            nRatio <- object@seqDepth[1] / object@seqDepth[2]
+              #nRatio <- sum(object@tagCount) / sum(object@input)
 	                # genome-wide sequencing depth adjustment
 	        }        
 	    )
@@ -208,9 +210,13 @@ setMethod(
 	        decoding="posterior" )
 	    new( "MosaicsHMM",         
 	    #    HMMfit=out, mosaicsFit=object, init=init, initPiMat=init.piMat,
-		    HMMfit=out, mosaicsEst=object@mosaicsEst, inputdata=dataSet_chr, 
-			init=init, initPiMat=init.piMat,
+		      HMMfit=out, mosaicsEst=object@mosaicsEst, 
+          chrID=object@chrID, coord=object@coord, 
+          tagCount=object@tagCount, input=object@input, 
+          mappability=object@mappability, gcContent=object@gcContent,
+          inputdata=dataSet_chr, 
+			    init=init, initPiMat=init.piMat,
 	        peakParam=peakParam, binsize=binsize, nRatio=nRatio,
-	        bicMosaics=BIC_mosaics, bicMosaicsHMM=BIC_mosaicsHMM )
+	        bicMosaics=BIC_mosaics, bicMosaicsHMM=BIC_mosaicsHMM, seqDepth=object@seqDepth )
 	}
 )
