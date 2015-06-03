@@ -4,6 +4,10 @@ Changes in version 2.9.7:
 BUG FIXES
 
     o mosaicsPeak(): fix the error that chrID is missing.
+
+    o adjustBoundary(): fix the error that chrID is incorrectly processed.
+
+    o constructBins(), generateWig(), extractReads(): fix the error for the processing of BAM files for PET data.
 	
 	
 Changes in version 2.9.6:

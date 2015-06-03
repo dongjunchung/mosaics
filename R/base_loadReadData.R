@@ -187,11 +187,28 @@
 		  suppressWarnings( greads <- as( greads, "GRanges" ) )
 		  suppressWarnings( greads <- resize( greads, fragLen ) )
 	  } else {
-		  suppressWarnings( greads <- readAlignmentsPairsFromBam( readfile, param = param ) )
-		  suppressWarnings( greads <- GRanges( seqnames = seqnames(greads),
-		  	ranges = IRanges( start=start(left(greads)), end=end(right(greads)) ),
-			  strand = Rle( "*", length(greads) ) )
-			)
+		  #suppressWarnings( greads <- readAlignmentsPairsFromBam( readfile, param = param ) )
+		  #suppressWarnings( greads <- GRanges( seqnames = seqnames(greads),
+		  #	ranges = IRanges( start=start(left(greads)), end=end(right(greads)) ),
+			#  strand = Rle( "*", length(greads) ) )
+			#)
+      
+      suppressWarnings( greads <- readGAlignmentPairsFromBam( readfile, param = param ) )
+
+      snms = seqnames(greads)
+      starts = start(left(greads))
+      ends = end(right(greads))
+      
+      # remove reads with negative widths         
+      idx = (starts >= ends)
+      if(any(idx)){
+        warning("Removing ",sum(idx)," reads, due to negative read lengths")
+        snms = snms[!idx]
+        starts = starts[!idx]
+        ends = ends[!idx]
+      }
+      suppressWarnings( greads <- GRanges( seqnames = snms,ranges = IRanges( start=starts, end=ends),strand = "*"))
+      rm(snms,starts,ends)
 	  }
     
     # split by chromosome

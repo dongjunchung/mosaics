@@ -96,7 +96,8 @@ setMethod(
         }
       ) 
     
-      chrList <- sort(unique(object@chrID))
+      #chrList <- sort(unique(object@chrID))
+      chrList <- as.character(chrCommon)
       
       for ( chr in 1:length(chrList) ) {
         # extract data for given chromosome
