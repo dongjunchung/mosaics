@@ -183,7 +183,7 @@
 	  param <- ScanBamParam( which=peakgrExt )
     
 	  if ( PET == FALSE ) {
-		  suppressWarnings( greads <- readGAlignmentsFromBam( readfile, param = param, use.names = FALSE ) )
+		  suppressWarnings( greads <- readGAlignments( readfile, param = param, use.names = FALSE ) )
 		  suppressWarnings( greads <- as( greads, "GRanges" ) )
 		  suppressWarnings( greads <- resize( greads, fragLen ) )
 	  } else {

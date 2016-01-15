@@ -39,7 +39,8 @@ setMethod(
         #inputExist <- sapply( read(object), function(x) length(x$Input) ) > 0
         inputExist <- object@tagData@numReads[,2] > 0
       } else {
-        inputExist <- rep( FALSE, length(read(object)) )
+        #inputExist <- rep( FALSE, length(read(object)) )
+        inputExist <- rep( FALSE, nrow(object@tagData@numReads) )
       }
       
       if ( parallel == TRUE ) {        

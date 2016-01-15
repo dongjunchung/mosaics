@@ -17,7 +17,7 @@
     yvar <- inverse.rle(stackedFragment$ChIP[[3]])    
     profileChip <- cbind( xvar, yvar )
     
-    if ( inputProvided & inputExist & !is.na(stackedFragment$Input[[1]]) ) {
+    if ( inputProvided && inputExist && !is.na(stackedFragment$Input[[1]]) ) {
       xvar <- (stackedFragment$Input[[1]]):(stackedFragment$Input[[2]])
       yvar <- inverse.rle(stackedFragment$Input[[3]])    
       profileInput <- cbind( xvar, yvar )
@@ -37,7 +37,7 @@
       locSummit <- floor(mean(firstBlock))
     }
     summitNew <- profileChip[ locSummit, 1 ]
-    if ( inputProvided & inputExist & !is.na(stackedFragment$Input[[1]]) ) {
+    if ( inputProvided && inputExist && !is.na(stackedFragment$Input[[1]]) ) {
       summitCoordInput <- match( summitNew, profileInput[,1] )
     }
     
@@ -80,7 +80,7 @@
     
     # calculate improvement of ChIP over input
     
-    if ( inputProvided & inputExist & !is.na(stackedFragment$Input[[1]]) ) {
+    if ( inputProvided && inputExist && !is.na(stackedFragment$Input[[1]]) ) {
             
       profileCoordInput <- match( profileChip[,1], profileInput[,1] )
       profileInput <- cbind( profileChip[,1], profileInput[ profileCoordInput, 2 ] )

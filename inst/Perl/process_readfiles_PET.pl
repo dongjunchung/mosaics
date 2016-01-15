@@ -76,6 +76,11 @@ if ( scalar(@exclude_chr) == 0 ) {
 	@ec_hash{ @exclude_chr } = 0;	
 }
 
+# count number of reads to calculate sequencing depth
+
+my $seqDepth = 0;
+my %nline = ();
+
 # process PET read file
 
 open IN, "$infile" or die "Cannot open input file $infile\n";
@@ -180,6 +185,10 @@ while(<IN>){
 				for (my $i = $bin_start; $i <= $bin_stop; $i++) {
 					${$bin_count{$chrt}}[$i] += $prob;
 				}
+        
+		        # count proper output lines
+        
+		        ${$nline{$chrt}}++;
 			} else {
 				# if there is no matrix for chromosome yet, 
         
@@ -197,6 +206,10 @@ while(<IN>){
 						${$bin_count{$chrt}}[$i] += $prob;
 					}
 				}
+        
+		        # count proper output lines
+        
+		        ${$nline{$chrt}} = 1;
 			}
 			
 			# delete the key to save memory
@@ -220,6 +233,12 @@ close( IN );
 
 chdir($outdir);
 
+# calculate sequencing depth
+
+foreach my $chr_id (keys %bin_count) {
+	$seqDepth += ${$nline{$chr_id}};
+}
+
 # write bin-level files
 
 if ( $bychr eq "N" ) {
@@ -227,6 +246,12 @@ if ( $bychr eq "N" ) {
     
     my $outfile = $filename."_bin".$binsize.".txt";
     open OUT, ">$outfile" or die "Cannot open $outfile\n";
+	
+	# sequencing depth
+	
+	print OUT "# sequencing depth: $seqDepth\n";
+    
+	# bin-level data for each chromosome
     
     foreach my $chr_id (keys %bin_count) {      
         my @bin_count_chr = @{$bin_count{$chr_id}};
@@ -249,6 +274,12 @@ if ( $bychr eq "N" ) {
         #my $outfile = $chr_id."_".$filename."_bin".$binsize.".txt";
         my $outfile = $filename."_bin".$binsize."_".$chr_id.".txt";
         open OUT, ">$outfile" or die "Cannot open $outfile\n";
+	
+		# sequencing depth
+	
+		print OUT "# sequencing depth: $seqDepth\n";
+    
+		# bin-level data
         
         my @bin_count_chr = @{$bin_count{$chr_id}};
         
