@@ -42,7 +42,7 @@ setMethod(
         } else {
           summitSignalChip <- 0
         }
-        if ( !is.na( object@tagData@coverage[[j]]$Input[[1]] ) ) {
+        if ( !is.na(seqDepth(object)[2]) && !is.na( object@tagData@coverage[[j]]$Input[[1]] ) ) {
           
           coverageInput <- object@tagData@coverage[[j]]$Input
           
@@ -69,7 +69,7 @@ setMethod(
         } else {
           summitSignalChip <- 0
         }
-        if ( !is.na( object@tagData@coverage[[j]]$Input[[1]] ) ) {
+        if ( !is.na(seqDepth(object)[2]) && !is.na( object@tagData@coverage[[j]]$Input[[1]] ) ) {
           
           coverageInput <- object@tagData@coverage[[j]]$Input
           

@@ -156,7 +156,7 @@ generateWig <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
         param <- ScanBamParam( which=GRanges( seqnames = chr, IRanges( 1, chrlen[[chr]] ) ) )
         
     	  if ( PET == FALSE ) {
-    		  suppressWarnings( greads <- readGAlignmentsFromBam( infile, param = param, use.names = FALSE ) )
+    		  suppressWarnings( greads <- readGAlignments( infile, param = param, use.names = FALSE ) )
     		  suppressWarnings( greads <- as( greads, "GRanges" ) )
     		  suppressWarnings( greads <- resize( greads, fragLen ) )
     	  } else {

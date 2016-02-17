@@ -103,7 +103,7 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
       if ( useChrfile ) {
         # if chrfile is provided, use it
         
-        message( "Use the chromosome informaion provided in 'chrfile'." )
+        message( "Use the chromosome information provided in 'chrfile'." )
         
         chrdata <- read.table( chrfile, header=FALSE, stringsAsFactors=FALSE )
         chrnames <- chrdata[,1]
@@ -114,7 +114,7 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
         
         # check BAM file for chromosome information
         
-        message( "Chromosome informaion is extracted from the BAM file." )
+        message( "Chromosome information is extracted from the BAM file." )
         
         bf <- BamFile( infile )
         baminfo <- seqinfo( bf )
@@ -168,7 +168,7 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
         param <- ScanBamParam( which=GRanges( seqnames = chr, IRanges( 1, chrlen[[chr]] ) ) )
     	  
     	  if ( PET == FALSE ) {
-    		  suppressWarnings( greads <- readGAlignmentsFromBam( infile, param = param, use.names = FALSE ) )
+    		  suppressWarnings( greads <- readGAlignments( infile, param = param, use.names = FALSE ) )
     		  suppressWarnings( greads <- as( greads, "GRanges" ) )
     		  suppressWarnings( greads <- resize( greads, fragLen ) )
     	  } else {

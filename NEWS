@@ -1,4 +1,14 @@
 
+Changes in version 2.9.8:
+
+BUG FIXES
+
+    o construtBins(), generateWig(), extractReads(): 'readGAlignments' replaces the defunct 'readGAlignmentsFromBam'.
+	
+	o extractReads(), findSummit(), adjustBoundary(), filterPeak(): more safeguards added.
+	
+	o constructBins(): fix typo.
+	
 Changes in version 2.9.7:
 
 BUG FIXES

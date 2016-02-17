@@ -57,7 +57,7 @@ setMethod(
           stackedFragment[[i]]$ChIP[[3]] <- NA
       }
       
-      if ( !is.na(controlFile) && !is.null(outInput$stackedFragment[[i]][[1]]) ) {
+      if ( !is.null(controlFile) && !is.na(outInput$stackedFragment[[i]][[1]]) ) {
         stackedFragment[[i]]$Input <- outInput$stackedFragment[[i]]
       } else {
         stackedFragment[[i]]$Input <- vector( "list", 3 )
@@ -82,7 +82,7 @@ setMethod(
           fragSet[[i]]$ChIP <- GRanges()
         }
         
-        if ( !is.na(controlFile) && !is.null(outInput$stackedFragment[[i]][[1]]) ) {
+        if ( !is.null(controlFile) && !is.na(outInput$stackedFragment[[i]][[1]]) ) {
           fragSet[[i]]$Input <- outInput$fragSet[[i]]
         } else {
           fragSet[[i]]$Input <- GRanges()
