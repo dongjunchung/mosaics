@@ -137,6 +137,8 @@ generateWig <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
       
       # process chromosome by chromosome
       
+      printHeader <- FALSE
+      
       for ( chr in chrnames ) {
         
         # skip if in the list of excludeChr or not in the chrfile
@@ -209,8 +211,11 @@ generateWig <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
         
         # write bin-level data file
   	
-    		cat( 'track type=wiggle_0 name="',outfile,'" ', file=outfile, sep="", append=TRUE )
-    		cat( 'description="',outfile,'"\n', file=outfile, sep="", append=TRUE )  	    
+    		if ( printHeader == FALSE ) {
+    		  cat( 'track type=wiggle_0 name="',outfile,'" ', file=outfile, sep="", append=TRUE )
+    		  cat( 'description="',outfile,'"\n', file=outfile, sep="", append=TRUE )  	    
+    		  printHeader <- TRUE
+    		}
   	    cat( 'variableStep chrom=',chr,' span=',span,'\n', file=outfile, sep="", append=TRUE )
      
         #for ( i in 1:length(bindata) )

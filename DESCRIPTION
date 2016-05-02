@@ -1,14 +1,14 @@
 Package: mosaics
 Type: Package
 Title: MOSAiCS (MOdel-based one and two Sample Analysis and Inference for ChIP-Seq)
-Version: 2.9.8
+Version: 2.9.9
 Depends: R (>= 3.0.0), methods, graphics, Rcpp
 Imports: MASS, splines, lattice, IRanges, GenomicRanges, GenomicAlignments, Rsamtools, GenomeInfoDb, S4Vectors
 Suggests: mosaicsExample
 Enhances: parallel
 LinkingTo: Rcpp
 SystemRequirements: Perl
-Date: 2016-01-31
+Date: 2016-03-15
 Author: Dongjun Chung, Pei Fen Kuan, Rene Welch, Sunduz Keles
 Maintainer: Dongjun Chung <dongjun.chung@gmail.com>
 Description: This package provides functions for fitting MOSAiCS and MOSAiCS-HMM, a statistical framework to analyze one-sample or two-sample ChIP-seq data of transcription factor binding and histone modification.

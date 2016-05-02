@@ -1,4 +1,10 @@
+ 
+Changes in version 2.9.9:
 
+BUG FIXES
+
+    o generateWig(): fix the error specific to the BAM file format, which generated unnecessary lines in the output WIG file.
+	
 Changes in version 2.9.8:
 
 BUG FIXES
