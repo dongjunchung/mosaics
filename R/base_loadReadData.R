@@ -193,7 +193,7 @@
 			#  strand = Rle( "*", length(greads) ) )
 			#)
       
-      suppressWarnings( greads <- readGAlignmentPairsFromBam( readfile, param = param ) )
+      suppressWarnings( greads <- readGAlignmentPairs( readfile, param = param ) )
 
       snms = seqnames(greads)
       starts = start(left(greads))
