@@ -155,9 +155,9 @@ generateWig <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
         
         # load BAM file
         
-        param <- ScanBamParam( which=GRanges( seqnames = chr, IRanges( 1, chrlen[[chr]] ) ) )
-        
     	  if ( PET == FALSE ) {
+        param <- ScanBamParam(which = GRanges(seqnames = chr,
+              IRanges(1, chrlen[[chr]])), flag=scanBamFlag(isUnmappedQuery=FALSE))
     		  suppressWarnings( greads <- readGAlignments( infile, param = param, use.names = FALSE ) )
     		  suppressWarnings( greads <- as( greads, "GRanges" ) )
     		  suppressWarnings( greads <- resize( greads, fragLen ) )
@@ -167,7 +167,8 @@ generateWig <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
     		  #	ranges = IRanges( start=start(left(greads)), end=end(right(greads)) ),
     			#  strand = Rle( "*", length(greads) ) )
     			#)
-      
+      param <- ScanBamParam(which = GRanges(seqnames = chr,
+          IRanges(1, chrlen[[chr]])), flag=scanBamFlag(isUnmappedQuery=FALSE, isProperPair=TRUE)) #tba    
           suppressWarnings( greads <- readGAlignmentPairs( infile, param = param ) )    
               
           snms = seqnames(greads)
