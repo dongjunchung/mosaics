@@ -168,7 +168,7 @@ generateWig <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
     			#  strand = Rle( "*", length(greads) ) )
     			#)
       param <- ScanBamParam(which = GRanges(seqnames = chr,
-          IRanges(1, chrlen[[chr]])), flag=scanBamFlag(isUnmappedQuery=FALSE, isProperPair=TRUE)) #tba    
+          IRanges(1, chrlen[[chr]])), flag=scanBamFlag(isUnmappedQuery=FALSE, isProperPair=TRUE))   
           suppressWarnings( greads <- readGAlignmentPairs( infile, param = param ) )    
               
           snms = seqnames(greads)
