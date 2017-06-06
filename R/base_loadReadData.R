@@ -196,8 +196,8 @@
       suppressWarnings( greads <- readGAlignmentPairs( readfile, param = param ) )
 
       snms = seqnames(greads)
-      starts = start(left(greads))
-      ends = end(right(greads))
+      starts = start(greads@first)
+      ends = end(greads@last)
       
       # remove reads with negative widths         
       idx = (starts >= ends)
