@@ -125,7 +125,7 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
       
       # calculate sequencing depth
       
-      seqDepth <- countBam(infile)$records
+      seqDepth <- sum(idxstatsBam(infile)$mapped)
       
       # file name for genome-wide file
         
