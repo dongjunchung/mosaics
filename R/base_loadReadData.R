@@ -153,7 +153,8 @@
     
     # remove temporary files after use
     
-  
+    unlink( tempfileName[1] )
+    unlink( tempfileName[2] )
     
     gc()    
     
