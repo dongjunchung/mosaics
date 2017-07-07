@@ -216,7 +216,7 @@
     
     # sequencing depth
     
-    seqDepth <- countBam(readfile)$records
+    seqDepth <- sum(idxstatsBam(readfile)$mapped)
   }
     
   # match reads with peaks & calculate coverage
