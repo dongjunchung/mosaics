@@ -125,7 +125,7 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
       
       # calculate sequencing depth
       
-      seqDepth <- countBam(infile)$records
+      seqDepth <- sum(idxstatsBam(infile)$mapped)
       
       # file name for genome-wide file
         
@@ -165,9 +165,9 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
         
         # load BAM file
         
-        param <- ScanBamParam( which=GRanges( seqnames = chr, IRanges( 1, chrlen[[chr]] ) ) )
-    	  
     	  if ( PET == FALSE ) {
+         param <- ScanBamParam(which = GRanges(seqnames = chr,
+              IRanges(1, chrlen[[chr]])), flag=scanBamFlag(isUnmappedQuery=FALSE))
     		  suppressWarnings( greads <- readGAlignments( infile, param = param, use.names = FALSE ) )
     		  suppressWarnings( greads <- as( greads, "GRanges" ) )
     		  suppressWarnings( greads <- resize( greads, fragLen ) )
@@ -177,12 +177,13 @@ constructBins <- function( infile=NULL, fileFormat=NULL, outfileLoc="./",
     		  #	ranges = IRanges( start=start(left(greads)), end=end(right(greads)) ),
     			#  strand = Rle( "*", length(greads) ) )
     			#)
-      
+      param <- ScanBamParam(which = GRanges(seqnames = chr,
+          IRanges(1, chrlen[[chr]])), flag=scanBamFlag(isUnmappedQuery=FALSE, isProperPair=TRUE))      
           suppressWarnings( greads <- readGAlignmentPairs( infile, param = param ) )
     
           snms = seqnames(greads)
-          starts = start(left(greads))
-          ends = end(right(greads))
+          starts = ifelse(strand(greads)=="+", start(greads@first), start(greads@last))
+          ends = ifelse(strand(greads)=="+", end(greads@last), end(greads@first))
           
           # remove reads with negative widths         
           idx = (starts >= ends)

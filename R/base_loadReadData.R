@@ -179,10 +179,9 @@
     # load reads corresponding to peak regions
     
     message( "Info: Reading and processing aligned read file..." )
-  
-	  param <- ScanBamParam( which=peakgrExt )
-    
+      
 	  if ( PET == FALSE ) {
+		  param <- ScanBamParam( which=peakgrExt, flag=scanBamFlag(isUnmappedQuery=FALSE))		  
 		  suppressWarnings( greads <- readGAlignments( readfile, param = param, use.names = FALSE ) )
 		  suppressWarnings( greads <- as( greads, "GRanges" ) )
 		  suppressWarnings( greads <- resize( greads, fragLen ) )
@@ -192,12 +191,12 @@
 		  #	ranges = IRanges( start=start(left(greads)), end=end(right(greads)) ),
 			#  strand = Rle( "*", length(greads) ) )
 			#)
-      
+      param <- ScanBamParam( which=peakgrExt, flag=scanBamFlag(isUnmappedQuery=FALSE, isProperPair=TRUE))            
       suppressWarnings( greads <- readGAlignmentPairs( readfile, param = param ) )
 
       snms = seqnames(greads)
-      starts = start(left(greads))
-      ends = end(right(greads))
+      starts = ifelse(strand(greads)=="+", start(greads@first), start(greads@last))
+      ends = ifelse(strand(greads)=="+", end(greads@last), end(greads@first))
       
       # remove reads with negative widths         
       idx = (starts >= ends)
@@ -217,7 +216,7 @@
     
     # sequencing depth
     
-    seqDepth <- countBam(readfile)$records
+    seqDepth <- sum(idxstatsBam(readfile)$mapped)
   }
     
   # match reads with peaks & calculate coverage
